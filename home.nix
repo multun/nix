@@ -58,6 +58,7 @@ in
       epkgs.flycheck
       epkgs.clang-format
       epkgs.rainbow-delimiters
+      epkgs.pyvenv
     ];
   };
   home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
