@@ -18,7 +18,8 @@ ne () {
     i3-start emacsclient -n -c "$@"
 }
 
-alias sp='systemctl suspend'
+alias sc='systemctl'
+alias scu='systemctl --user'
 alias mpv='mpv --no-audio-display'
 
 retry () {
@@ -149,3 +150,10 @@ format () {
 }
 
 alias ssh='TERM=xterm-256color \ssh'
+
+alias lock='i3lock'
+alias sus='systemctl suspend'
+
+dodo () {
+     lock & sus
+}
