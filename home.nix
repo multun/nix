@@ -61,7 +61,9 @@ in
       epkgs.pyvenv
     ];
   };
+
   home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
+  home.file.".config/i3/config".source = ./configs/i3config;
 
   services.gpg-agent = {
     enable = true;
