@@ -1,6 +1,7 @@
 # please configure your env inside ~/.pam_environment 
 
 export EDITOR=emacs
+export CLICOLOR_FORCE=1
 
 shescape () {
     printf '%q ' "$@"

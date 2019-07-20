@@ -25,6 +25,7 @@ in
     pkgs.gthumb
     pkgs.gimp
     pkgs.scrot
+    pkgs.tree
     mypkgs.myxcwd
   ];
   fonts.fontconfig.enable = true;
