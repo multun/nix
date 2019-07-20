@@ -1,10 +1,5 @@
 { pkgs, ... }:
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
-    python_packages = ps: with ps; [
-      # needed for flycheck
-      flake8
-      pylint
-    ];
 in
 {
   home.packages = [
