@@ -1,0 +1,100 @@
+theme = "solarized-dark"
+[icons]
+name = "awesome"
+[icons.overrides]
+# override the whole thing to get the list of names
+time = " \uF017 "
+music = " \uF001 "
+music_play = "  \uF04B  "
+music_pause = "  \uF04C  "
+music_next = " \uF061 "
+music_prev = " \uF060 "
+cogs = " \uF085 "
+memory_mem = " \uF2DB "
+memory_swap = " \uF0A0 "
+cpu = " \uF3FD "
+bat = " \uF5DF "
+bat_full = " \uF240 "
+bat_charging = "\uF1E6 "
+bat_discharging = " \uF242 "
+update = " \uF062 "
+toggle_off = " \uF204 "
+toggle_on = " \uF205 "
+volume_full = " \uF028 "
+volume_half = " \uF027 "
+volume_empty = " \uF026 "
+volume_muted = "\uF00D"
+thermometer = " \uF2C8 "
+xrandr = " \uF26C "
+net_up = " ⬆ "
+net_down = " ⬇ "
+net_wireless = "\uF1EB"
+net_wired = "\uF796"
+net_vpn = "\uF023"
+ping = " \u21BA "
+backlight_empty = " \u1F315 "
+backlight_partial1 = " \u1F314 "
+backlight_partial2 = " \u1F313 "
+backlight_partial3 = " \u1F312 "
+backlight_full = " \u1F311 "
+weather_sun = " \uF185 "
+weather_snow = " \uF2DC "
+weather_thunder = " \uF0E7 "
+weather_clouds = " \uF0C2 "
+weather_rain = " \uF043 "
+weather_default = " \uF0C2 "
+uptime = " \uF017 "
+gpu = " \uF26C "
+mail = " \uF0E0 "
+bluetooth = " \uF294"
+headphones = " \uF025"
+joystick = " \uF11B"
+keyboard = " \uF11C"
+mouse = " \uF245 "
+
+
+[[block]]
+block = "disk_space"
+path = "/"
+alias = "/"
+info_type = "available"
+unit = "GB"
+interval = 20
+warning = 20.0
+alert = 10.0
+
+[[block]]
+block = "net"
+device = "wlp3s0"
+ip = true
+speed_up = false
+interval = 5
+
+[[block]]
+block = "memory"
+display_type = "memory"
+format_mem = "{Mup}%"
+format_swap = "{SUp}%"
+
+[[block]]
+block = "cpu"
+interval = 1
+
+[[block]]
+block = "load"
+interval = 1
+format = "{1m}"
+
+[[block]]
+block = "sound"
+
+[[block]]
+block = "battery"
+interval = 10
+device = "BAT1"
+format = "{percentage}% {time}"
+
+[[block]]
+block = "time"
+interval = 60
+format = "%a %d/%m %R"

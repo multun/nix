@@ -65,6 +65,8 @@ in
 
   home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
   home.file.".config/i3/config".source = ./configs/i3config;
+  home.file.".config/i3status_rust.toml".source = ./configs/i3status_rust.toml;
+  home.file.".config/alacritty/alacritty.yml".source = ./configs/alacritty.yml;
 
   services.gpg-agent = {
     enable = true;
