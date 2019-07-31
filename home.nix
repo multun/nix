@@ -94,6 +94,7 @@ in
   programs.emacs = {
     enable = true;
     extraPackages = epkgs: [
+      epkgs.writeroom-mode
       epkgs.nix-mode
       epkgs.magit
       epkgs.flycheck-pyflakes
