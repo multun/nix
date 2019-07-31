@@ -14,7 +14,7 @@
  '(tool-bar-mode nil)
  '(package-selected-packages
    (quote
-    (flycheck-pyflakes multiple-cursors auto-complete csharp-mode yaml-mode flycheck-irony irony flycheck clang-format rainbow-delimiters pyvenv))))
+    (flycheck-pyflakes multiple-cursors auto-complete csharp-mode yaml-mode flycheck-irony irony flycheck clang-format rainbow-delimiters pyvenv company-irony))))
 
 (require 'notmuch)
 
@@ -56,6 +56,8 @@
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
+(eval-after-load 'company
+  '(add-to-list 'company-backends 'company-irony))
 
 (global-unset-key (kbd "C-z"))
 

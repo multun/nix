@@ -66,6 +66,7 @@ in
       epkgs.clang-format
       epkgs.rainbow-delimiters
       epkgs.pyvenv
+      epkgs.company-irony
     ];
   };
 
