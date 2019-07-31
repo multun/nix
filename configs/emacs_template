@@ -24,7 +24,7 @@
 (setq-default indent-tabs-mode nil)
 
 (add-to-list 'default-frame-alist
-             '(font . "Terminus"))
+             '(font . "Terminus 8"))
 
 ;; enable rainbow delimiters (highlight braces)
 (require 'rainbow-delimiters)
