@@ -4,6 +4,17 @@ in
 {
   home.packages = [
     pkgs.font-awesome-ttf
+
+    # acu stuff
+    pkgs.fira
+    pkgs.fira-code
+    pkgs.fira-mono
+    pkgs.ispell
+    pkgs.texlive.combined.scheme-full
+    pkgs.gnumake
+    pkgs.gcc
+
+    pkgs.python3Packages.grip
     pkgs.htop
     pkgs.fortune
     pkgs.clang-tools
@@ -32,9 +43,39 @@ in
     pkgs.gimp
     pkgs.scrot
     pkgs.tree
+    pkgs.wpa_supplicant_gui
+    pkgs.inotify-tools
+    pkgs.wireshark
+    pkgs.flashplayer
+    pkgs.zathura
+    pkgs.manpages
+    pkgs.firefox
+    pkgs.pavucontrol
+    pkgs.arandr
     mypkgs.myxcwd
   ];
   fonts.fontconfig.enable = true;
+
+  nixpkgs.config = {
+    allowUnfree = true;
+    documentation.dev.enable = true;
+    xdg.portal.enable = false;
+    firefox = {
+      enableAdobeFlash = true;
+      enablePlasmaBrowserIntegration = false;
+    };
+    packageOverrides = pkgs:
+      let qtbase = pkgs.qt5.qtbase; in
+      {
+        wpa_supplicant_gui = pkgs.wpa_supplicant_gui.overrideAttrs (old_attrs: {
+            nativeBuildInputs = [ qtbase pkgs.makeWrapper ] ++ old_attrs.nativeBuildInputs;
+            postInstall = (old_attrs.postInstall + ''
+              wrapProgram $out/bin/wpa_gui \
+                    --prefix QT_PLUGIN_PATH : ${qtbase}/${qtbase.qtPluginPrefix}
+            '');
+        });
+      };
+  };
 
   programs.zsh = {
     enable = true;
