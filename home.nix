@@ -15,8 +15,14 @@ in
     pkgs.dejavu_fonts
     pkgs.keepassxc
     pkgs.rsync
+    # receive emails
+    pkgs.isync
+    # index and search emails
     pkgs.notmuch
+    # view emails
     pkgs.astroid
+    # send emails
+    pkgs.msmtp
     pkgs.iftop
     pkgs.bat
     pkgs.grml-zsh-config

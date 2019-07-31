@@ -16,6 +16,8 @@
    (quote
     (flycheck-pyflakes multiple-cursors auto-complete csharp-mode yaml-mode flycheck-irony irony flycheck clang-format rainbow-delimiters pyvenv))))
 
+(require 'notmuch)
+
 (setq c-default-style "bsd"
       c-basic-offset 4)
 
