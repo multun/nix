@@ -36,7 +36,7 @@ bindsym XF86AudioRaiseVolume exec pactl set-sink-volume $pasink +$soundstep%
 
 bindsym $mod+Shift+Return exec emacsclient -c -n -e '(switch-to-buffer nil)'
 bindsym $mod+b exec firefox
-bindsym $mod+Control+l exec i3lock -c 00000
+bindsym $mod+Control+l exec i3lock -c 000000
 # bindsym $mod+c exec xdotool click 1
 # bindsym $mod+Shift+c exec xdotool click 3
 bindsym $mod+Control+k exec keepassxc
