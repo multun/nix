@@ -10,12 +10,14 @@ from pathlib import Path
 
 DNode = namedtuple('DepthfulNode', ['node', 'depth'])
 
+
 def get_parent(pid):
     with (Path(f'/proc/{pid}') / 'status').open() as status_file:
         for line in status_file:
             line = line.split('\t')
             if line[0] == 'PPid:':
                 return int(line[1])
+
 
 def get_proctree():
     def get_pids():
@@ -29,8 +31,10 @@ def get_proctree():
         res[ppid].append(pid)
     return res
 
+
 def get_deepest_child(pid):
     ptree = get_proctree()
+
     def children_depth(pid, depth):
         children = ptree.get(pid)
         if children is None:
@@ -43,8 +47,10 @@ def get_deepest_child(pid):
 
     return max(children_depth(pid, 0), key=lambda p: p.depth).node
 
+
 def get_cwd(pid):
     return str(Path(f'/proc/{pid}/cwd').resolve())
+
 
 def get_focused_xid():
     i3_root = json.loads(subprocess.check_output(['i3-msg', '-t', 'get_tree']))
@@ -56,19 +62,25 @@ def get_focused_xid():
         for subnode in node.get('nodes', []):
             yield from get_focused(subnode, depth + 1)
 
-
-    focused_node = max(get_focused(i3_root), key=lambda dnode: dnode.depth)
+    focused_nodes = get_focused(i3_root)
+    focused_node = max(focused_nodes, default=None,
+                       key=lambda dnode: dnode.depth)
+    if focused_node is None:
+        return None
     return str(focused_node.node['window'])
+
 
 def xprop(xid, *args):
     xprop_args = ['xprop', '-id', xid] + list(args)
     return subprocess.check_output(xprop_args).decode().strip()
+
 
 def pid_from_xid(xid):
     try:
         return xprop(xid, '_NET_WM_PID').split(' ')[-1]
     except:
         return None
+
 
 def window_name_from_xid(xid):
     try:
@@ -78,20 +90,18 @@ def window_name_from_xid(xid):
     except:
         return None
 
+
 def cwd_from_xid(xid):
     window_name = window_name_from_xid(xid)
     pid = pid_from_xid(xid)
 
     if window_name is not None \
-       and (window_name.startswith('/') \
+       and (window_name.startswith('/')
             or window_name.startswith('~')):
         title_path = Path(window_name)
 
-        # avoid looping indefinitely, just in case
-        up_count = 0
-        while not title_path.is_dir() and up_count < 3:
+        if not title_path.is_dir():
             title_path = title_path.parent
-            up_count += 1
 
         return str(title_path)
 
@@ -100,8 +110,14 @@ def cwd_from_xid(xid):
 
     return None
 
+
 if __name__ == '__main__':
-    cwd = cwd_from_xid(get_focused_xid())
+    cwd = None
+
+    focused_xid = get_focused_xid()
+    if focused_xid is not None:
+        cwd = cwd_from_xid(focused_xid)
+
     if cwd is None:
         cwd = os.environ.get('HOME')
 
