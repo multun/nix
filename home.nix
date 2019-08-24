@@ -1,80 +1,96 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
 in
 {
-  home.packages = [
-    pkgs.font-awesome-ttf
+  home.packages = with pkgs; [
+    # nix stuff
+    nox
 
     # acu stuff
-    pkgs.fira
-    pkgs.fira-code
-    pkgs.fira-mono
-    pkgs.ispell
-    pkgs.texlive.combined.scheme-full
-    pkgs.gnumake
-    pkgs.gcc
+    fira
+    fira-code
+    fira-mono
+    ispell
+    texlive.combined.scheme-full
 
-    pkgs.python3Packages.grip
-    pkgs.htop
-    pkgs.fortune
-    pkgs.clang-tools
-    pkgs.alacritty
-    pkgs.terminus_font
-    pkgs.font-awesome
-    pkgs.powerline-fonts
-    pkgs.i3status-rust
-    pkgs.dejavu_fonts
-    pkgs.keepassxc
-    pkgs.rsync
-    # receive emails
-    pkgs.isync
-    # index and search emails
-    pkgs.notmuch
-    # view emails
-    pkgs.astroid
-    # send emails
-    pkgs.msmtp
-    pkgs.iftop
-    pkgs.bat
-    pkgs.grml-zsh-config
-    pkgs.android-file-transfer
-    pkgs.acpilight
-    pkgs.gthumb
-    pkgs.gimp
-    pkgs.scrot
-    pkgs.tree
-    pkgs.wpa_supplicant_gui
-    pkgs.inotify-tools
-    pkgs.wireshark
-    pkgs.flashplayer
-    pkgs.zathura
-    pkgs.manpages
-    pkgs.firefox
-    pkgs.pavucontrol
-    pkgs.arandr
+    # dev tools
+    (lib.lowPrio clang)
+    (lib.hiPrio gcc)
+    gnumake
+    python3Packages.grip
+    clang-tools
+    jq
+    binutils
+
+    # window manager & friends / dotfiles stuff
+    alacritty
+    terminus_font
+    font-awesome-ttf
+    font-awesome
+    powerline-fonts
+    i3status-rust
+    dejavu_fonts
+    grml-zsh-config
     mypkgs.myxcwd
+    numix-icon-theme
+    hicolor-icon-theme
+
+    # CLI utils
+    exa
+    ripgrep
+    fzf
+    file
+    lf
+    fd
+    htop
+    psmisc
+    fortune
+    iftop
+    bat
+    tree
+    inotify-tools
+    manpages
+    zip
+    unzip
+
+    # emails
+    isync   # receive
+    notmuch # index and search
+    astroid # view
+    msmtp   # send
+
+    # networking
+    wpa_supplicant_gui
+    aircrack-ng
+    aria2
+    rsync
+
+    # desktop
+    zathura
+    firefox
+    android-file-transfer
+    keepassxc
+
+    # audio / video
+    mpv
+    pavucontrol
+    pulseeffects
+
+    # image processing
+    scrot
+    gthumb
+    gimp
+    feh
+
+    # system config
+    arandr
+    acpilight
   ];
   fonts.fontconfig.enable = true;
 
   nixpkgs.config = {
-    allowUnfree = true;
     documentation.dev.enable = true;
     xdg.portal.enable = false;
-    firefox = {
-      enableAdobeFlash = true;
-      enablePlasmaBrowserIntegration = false;
-    };
-    packageOverrides = pkgs:
-      let qtbase = pkgs.qt5.qtbase; in
-      {
-        wpa_supplicant_gui = pkgs.wpa_supplicant_gui.overrideAttrs (old_attrs: {
-            nativeBuildInputs = [ qtbase pkgs.makeWrapper ] ++ old_attrs.nativeBuildInputs;
-            postInstall = (old_attrs.postInstall + ''
-              wrapProgram $out/bin/wpa_gui \
-                    --prefix QT_PLUGIN_PATH : ${qtbase}/${qtbase.qtPluginPrefix}
-            '');
-        });
-      };
   };
 
   programs.zsh = {
@@ -95,6 +111,7 @@ in
     enable = true;
     extraPackages = epkgs: [
       epkgs.writeroom-mode
+      epkgs.markdown-mode
       epkgs.nix-mode
       epkgs.magit
       epkgs.flycheck-pyflakes
@@ -110,6 +127,25 @@ in
       epkgs.pyvenv
       epkgs.company-irony
     ];
+
+    overrides = (self: super: {
+      irony = super.irony.overrideAttrs(old: {
+        version = builtins.head (builtins.splitVersion old.version);
+        preBuild = ''
+          make
+          make install
+        '';
+
+        postInstall = ''
+          mkdir -p $out
+          rm -rf $out/share/emacs/site-lisp/elpa/*/server
+        '';
+        packageRequires = [ ];
+        meta = old.meta // {
+          broken = false;
+        };
+      });
+    });
   };
 
   home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
