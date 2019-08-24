@@ -1,7 +1,8 @@
-# please configure your env inside ~/.pam_environment 
+# please configure your env inside ~/.pam_environment
 
 export EDITOR=emacs
 export CLICOLOR_FORCE=1
+export FZF_DEFAULT_OPTS="--preview 'bat --style=numbers --color=always {} | head -500'"
 
 shescape () {
     printf '%q ' "$@"
