@@ -83,7 +83,7 @@
 (global-set-key (kbd "C-c RET") 'mc/edit-lines)
 
 (defun insert-nbsp () (interactive)
-       (insert " "))
+  (insert (char-from-name "NO-BREAK SPACE")))
 (global-set-key (kbd "M-SPC") 'insert-nbsp)
 
 (defun increment-number-at-point ()
