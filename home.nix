@@ -10,7 +10,9 @@ in
     fira
     fira-code
     fira-mono
-    ispell
+    aspell
+    aspellDicts.fr
+    aspellDicts.en-computers
     texlive.combined.scheme-full
 
     # dev tools
