@@ -159,3 +159,11 @@ alias sus='systemctl suspend'
 dodo () {
      lock & sus
 }
+
+nixpkgs-shell () {
+    nix-shell -E "(import <nixpkgs> {}).${1}"
+}
+
+acu-shell () {
+    nixpkgs-shell acu-shell
+}
