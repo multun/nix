@@ -4,7 +4,7 @@ in
 {
   home.packages = with pkgs; [
     # nix stuff
-    nox
+    nix-review
 
     # acu stuff
     fira
