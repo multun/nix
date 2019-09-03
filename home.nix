@@ -15,6 +15,11 @@ in
     aspellDicts.en-computers
     texlive.combined.scheme-full
 
+    # sysadmin
+    virtmanager
+    debootstrap
+    ansible
+
     # dev tools
     (lib.lowPrio clang)
     (lib.hiPrio gcc)
