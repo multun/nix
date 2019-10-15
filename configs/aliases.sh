@@ -161,9 +161,15 @@ dodo () {
 }
 
 nixpkgs-shell () {
-    nix-shell -E "(import <nixpkgs> {}).${1}"
+    local shell_name="$1"
+    shift
+    nix-shell -E "(import <nixpkgs> {}).${shell_name}" "$@"
 }
 
 acu-shell () {
-    nixpkgs-shell acu-shell
+    nixpkgs-shell acu-shell "$@"
+}
+
+nixpkgs-commit() {
+    nix eval --raw '(import <nixpkgs> {}).lib.version' | cut -d. -f3
 }
