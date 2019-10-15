@@ -181,5 +181,6 @@ in
     enable = true;
     userEmail = "victor.collod@epita.fr";
     userName = "Victor \"multun\" Collod";
+    ignores = [ "*~" "\#*\#" ".\#*" ];
   };
 }
