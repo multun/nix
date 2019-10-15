@@ -5,6 +5,7 @@ in
   home.packages = with pkgs; [
     # nix stuff
     nix-review
+    nixpkgs-fmt
 
     # acu stuff
     fira
@@ -14,11 +15,19 @@ in
     aspellDicts.fr
     aspellDicts.en-computers
     texlive.combined.scheme-full
+    vim
+    slrn
+    cmake
+    ltrace
+    lldb
 
     # sysadmin
     virtmanager
     debootstrap
     ansible
+    ldns
+    iptables
+    docker-compose
 
     # dev tools
     (lib.lowPrio clang)
@@ -29,6 +38,7 @@ in
     jq
     binutils
     gdb
+    moreutils
 
     # window manager & friends / dotfiles stuff
     alacritty
@@ -60,6 +70,8 @@ in
     manpages
     zip
     unzip
+    pv
+    xorg.xkill
 
     # emails
     isync   # receive
@@ -72,23 +84,33 @@ in
     aircrack-ng
     aria2
     rsync
+    nmap
 
     # desktop
     zathura
+    okular
+    evince
     firefox
+    chromium
     android-file-transfer
     keepassxc
+    screenkey
+    libreoffice-fresh
+    simple-scan
+    usbutils
 
     # audio / video
     mpv
+    vlc
+    audacity
     pavucontrol
-    pulseeffects
 
     # image processing
     scrot
     gthumb
     gimp
     feh
+    inkscape
 
     # system config
     arandr
@@ -133,7 +155,10 @@ in
       epkgs.clang-format
       epkgs.rainbow-delimiters
       epkgs.pyvenv
+      epkgs.company
       epkgs.company-irony
+      epkgs.editorconfig
+      epkgs.which-key
     ];
 
     overrides = (self: super: {
