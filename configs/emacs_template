@@ -18,14 +18,22 @@
 
 (require 'notmuch)
 
+(global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
+(global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "S-C-<down>") 'shrink-window)
+(global-set-key (kbd "S-C-<up>") 'enlarge-window)
+
+(editorconfig-mode 1)
+
 (setq c-default-style "bsd"
       c-basic-offset 4)
-
 (setq-default indent-tabs-mode nil)
 
 (add-to-list 'default-frame-alist
              '(font . "Terminus 8"))
 
+(require 'which-key)
+(which-key-mode)
 ;; enable rainbow delimiters (highlight braces)
 (require 'rainbow-delimiters)
 (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
@@ -33,7 +41,7 @@
 ;; CODING STYLE GLOBAL
 ;; warn on weird spacing / tabs
 (require 'whitespace)
-
+(setq require-final-newline t)
 ;; lines-tail
 (setq whitespace-style '(face empty tabs trailing))
 (global-whitespace-mode t)
