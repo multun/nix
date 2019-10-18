@@ -111,6 +111,10 @@ def cwd_from_xid(xid):
     return None
 
 
+def check_path(path):
+    return cwd is not None and Path(cwd).is_dir()
+
+
 if __name__ == '__main__':
     cwd = None
 
@@ -118,19 +122,17 @@ if __name__ == '__main__':
     if focused_xid is not None:
         cwd = cwd_from_xid(focused_xid)
 
-    if cwd is None:
-        cwd = os.environ.get('HOME')
+    if not check_path(cwd):
+        cwd = str(Path.home())
 
-    if cwd is None:
+    if not check_path(cwd):
         cwd = '/'
 
     if len(sys.argv) < 2:
         print(cwd)
         exit(0)
 
-    args = list(map(lambda s: s.replace('{}', cwd),
-                    sys.argv[2:]))
-
+    args = [s.replace('{}', cwd) for s in sys.argv[2:]]
     os.execlp(sys.argv[1], *([sys.argv[1]] + args))
     print("exec failed", file=sys.stderr)
     exit(1)
