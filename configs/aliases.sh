@@ -174,3 +174,14 @@ acu-shell () {
 nixpkgs-commit() {
     nix eval --raw '(import <nixpkgs> {}).lib.version' | cut -d. -f3
 }
+
+git-ublame() {
+    git blame "$@" | awk '
+        $1 == "author" {
+            author=substr($0,length($1)+2)
+        }
+
+        /^\t/ {
+            print author,$0
+        }'
+}
