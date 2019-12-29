@@ -1,5 +1,6 @@
 # please configure your env inside ~/.pam_environment
 
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export EDITOR=emacs
 export CLICOLOR_FORCE=1
 export FZF_DEFAULT_OPTS="--preview 'bat --style=numbers --color=always {} | head -500'"
