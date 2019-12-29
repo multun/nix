@@ -2,6 +2,7 @@
 
 (package-initialize)
 
+
 (custom-set-variables
  '(ansi-color-names-vector
    ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
@@ -101,3 +102,10 @@
       (error "No number at point"))
   (replace-match (number-to-string (1+ (string-to-number (match-string 0))))))
 (global-set-key (kbd "C-c +") 'increment-number-at-point)
+
+(defun change-font-height (delta)
+  (set-face-attribute 'default
+                      (selected-frame)
+                      :height (+ (face-attribute 'default :height) delta)))
+(global-set-key (kbd "C-+") '(lambda () (interactive) (change-font-height +50)))
+(global-set-key (kbd "C--") '(lambda () (interactive) (change-font-height -50)))
