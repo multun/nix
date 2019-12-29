@@ -3,6 +3,11 @@ let mypkgs = import ./mypkgs.nix { inherit pkgs; };
 in
 {
   home.packages = with pkgs; [
+    # rust stuff
+    rustc
+    cargo
+    rustfmt
+
     # nix stuff
     nix-review
     nixpkgs-fmt
@@ -20,6 +25,11 @@ in
     cmake
     ltrace
     lldb
+    rr
+    uftrace
+    graphviz
+    imagemagick
+    sourcetrail
 
     # sysadmin
     virtmanager
@@ -28,6 +38,7 @@ in
     ldns
     iptables
     docker-compose
+    libcgroup # for cgcreate and friends
 
     # dev tools
     (lib.lowPrio clang)
@@ -39,6 +50,7 @@ in
     binutils
     gdb
     moreutils
+    unrar
 
     # window manager & friends / dotfiles stuff
     alacritty
@@ -104,6 +116,8 @@ in
     vlc
     audacity
     pavucontrol
+    ffmpeg
+    vokoscreen # screen recorder
 
     # image processing
     scrot
@@ -112,13 +126,23 @@ in
     feh
     inkscape
 
+    # 3d graphics
+    apitrace
+    blender
+    renderdoc
+    meshlab
+
     # system config
     arandr
     acpilight
+
+    # school
+    geogebra
   ];
   fonts.fontconfig.enable = true;
 
   nixpkgs.config = {
+    allowUnfree = true;
     documentation.dev.enable = true;
     xdg.portal.enable = false;
   };
@@ -139,27 +163,30 @@ in
   services.emacs.enable = true;
   programs.emacs = {
     enable = true;
-    extraPackages = epkgs: [
-      epkgs.writeroom-mode
-      epkgs.markdown-mode
-      epkgs.nix-mode
-      epkgs.magit
-      epkgs.flycheck-pyflakes
-      epkgs.multiple-cursors
-      epkgs.auto-complete
-      epkgs.csharp-mode
-      epkgs.yaml-mode
-      epkgs.flycheck-irony
-      epkgs.irony
-      epkgs.flycheck
-      epkgs.clang-format
-      epkgs.rainbow-delimiters
-      epkgs.pyvenv
-      epkgs.company
-      epkgs.company-irony
-      epkgs.editorconfig
-      epkgs.which-key
-    ];
+    extraPackages = epkgs: (
+      (with epkgs; [
+        rust-mode
+        writeroom-mode
+        markdown-mode
+        nix-mode
+        magit
+        flycheck-pyflakes
+        multiple-cursors
+        auto-complete
+        csharp-mode
+        yaml-mode
+        flycheck-irony
+        irony
+        flycheck
+        clang-format
+        rainbow-delimiters
+        pyvenv
+        company
+        company-irony
+        editorconfig
+        which-key
+      ])
+    );
 
     overrides = (self: super: {
       irony = super.irony.overrideAttrs(old: {
