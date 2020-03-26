@@ -9,8 +9,13 @@ shescape () {
     printf '%q ' "$@"
 }
 
-i3-start () {
-    i3-msg -q -t command exec "cd $(shescape "$PWD") && $(shescape "$@")"
+i3msg='i3-msg'
+if ! [ -z "${SWAYSOCK+x}" ]; then
+  i3msg='swaymsg'
+fi
+
+i3start () {
+    "$i3msg" -q -t command exec "cd $(shescape "$PWD") && $(shescape "$@")"
 }
 
 cne () {
@@ -18,7 +23,7 @@ cne () {
 }
 
 ne () {
-    i3-start emacsclient -n -c "$@"
+    i3start emacsclient -n -c "$@"
 }
 
 alias sc='systemctl'
@@ -43,25 +48,6 @@ setclip () {
 
 getclip () {
     xclip -selection c -o
-}
-
-export EPICFLAGS="-Wall -Wextra -std=c99 -pedantic \
-  -Wfloat-equal -Wundef -Wshadow -Wpointer-arith \
-  -Wbad-function-cast -Wcast-qual -Wcast-align \
-  -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes \
-  -Wmissing-declarations -Wnested-externs \
-  -Wunreachable-code -Wwrite-strings"
-
-EPICXXFLAGS=( -std=c++17 -pedantic -Wall -Wextra -Werror )
-
-export CFLAGS="$EPICFLAGS"
-
-ecc () {
-    gcc $EPICFLAGS "$@"
-}
-
-ecc++ () {
-    g++  ${EPICXXFLAGS[@]} "$@"
 }
 
 ivalgrind () {
