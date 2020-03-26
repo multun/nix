@@ -10,6 +10,9 @@ from pathlib import Path
 
 DNode = namedtuple('DepthfulNode', ['node', 'depth'])
 
+HAS_WAYLAND = "SWAYSOCK" in os.environ
+
+I3MSG = "swaymsg" if HAS_WAYLAND else "i3-msg"
 
 def get_parent(pid):
     with (Path(f'/proc/{pid}') / 'status').open() as status_file:
@@ -52,8 +55,8 @@ def get_cwd(pid):
     return str(Path(f'/proc/{pid}/cwd').resolve())
 
 
-def get_focused_xid():
-    i3_root = json.loads(subprocess.check_output(['i3-msg', '-t', 'get_tree']))
+def get_focused_node():
+    i3_root = json.loads(subprocess.check_output([I3MSG, '-t', 'get_tree']))
 
     def get_focused(node, depth=0):
         if node['focused']:
@@ -65,9 +68,14 @@ def get_focused_xid():
     focused_nodes = get_focused(i3_root)
     focused_node = max(focused_nodes, default=None,
                        key=lambda dnode: dnode.depth)
+    return None if focused_node is None else focused_node.node
+
+
+def get_focused_xid():
+    focused_node = get_focused_node()
     if focused_node is None:
         return None
-    return str(focused_node.node['window'])
+    return str(focused_node['window'])
 
 
 def xprop(xid, *args):
@@ -91,10 +99,7 @@ def window_name_from_xid(xid):
         return None
 
 
-def cwd_from_xid(xid):
-    window_name = window_name_from_xid(xid)
-    pid = pid_from_xid(xid)
-
+def cwd_from_window(window_name, pid):
     if window_name is not None \
        and (window_name.startswith('/')
             or window_name.startswith('~')):
@@ -118,9 +123,16 @@ def check_path(path):
 if __name__ == '__main__':
     cwd = None
 
-    focused_xid = get_focused_xid()
-    if focused_xid is not None:
-        cwd = cwd_from_xid(focused_xid)
+    if HAS_WAYLAND:
+        node = get_focused_node()
+        if node is not None:
+            cwd = cwd_from_window(node["name"], node["pid"])
+    else:
+        focused_xid = get_focused_xid()
+        if focused_xid is not None:
+            window_name = window_name_from_xid(focused_xid)
+            pid = pid_from_xid(focused_xid)
+            cwd = cwd_from_window(window_name, pid)
 
     if not check_path(cwd):
         cwd = str(Path.home())
