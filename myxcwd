@@ -103,7 +103,7 @@ def cwd_from_window(window_name, pid):
     if window_name is not None \
        and (window_name.startswith('/')
             or window_name.startswith('~')):
-        title_path = Path(window_name)
+        title_path = Path(window_name).expanduser()
 
         if not title_path.is_dir():
             title_path = title_path.parent
@@ -117,7 +117,10 @@ def cwd_from_window(window_name, pid):
 
 
 def check_path(path):
-    return cwd is not None and Path(cwd).is_dir()
+    try:
+        return cwd is not None and Path(cwd).is_dir()
+    except PermissionError:
+        return False
 
 
 if __name__ == '__main__':
@@ -125,8 +128,9 @@ if __name__ == '__main__':
 
     if HAS_WAYLAND:
         node = get_focused_node()
-        if node is not None:
+        if node is not None and node["type"] == "con":
             cwd = cwd_from_window(node["name"], node["pid"])
+
     else:
         focused_xid = get_focused_xid()
         if focused_xid is not None:
