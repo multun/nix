@@ -171,3 +171,25 @@ git-ublame() {
             print author,$0
         }'
 }
+
+top_cpu () {
+    ps -w -eo %cpu,pid,comm --sort=-%cpu | head
+}
+
+most_recent_download() {
+    find ~/Downloads -maxdepth 1 -type f -printf "%T@\t%p\n" | sort -n | cut -f 2- | tail -n 1
+}
+
+flash_ergodox() {
+    local last_download="$(most_recent_download)"
+    echo "last download: $last_download"
+    case "${last_download##*/}" in
+        ergodox_ez_*.hex) ;;
+        *)
+            echo "the last download isn't an ergodox rom"
+            return 1
+            ;;
+    esac
+
+    teensy-loader-cli -v -mmcu=atmega32u4 -w "$last_download"
+}
