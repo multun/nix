@@ -197,7 +197,6 @@ in
     geogebra
 
     # sncf
-    maven_jdk11
     gradle_jdk11
     jdk11
     jetbrains.idea-community
