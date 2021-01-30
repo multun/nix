@@ -15,9 +15,9 @@
  '(tool-bar-mode nil)
  '(package-selected-packages
    (quote
-    (flycheck-pyflakes multiple-cursors auto-complete csharp-mode yaml-mode flycheck-irony irony flycheck clang-format rainbow-delimiters pyvenv company-irony))))
+    (flycheck-pyflakes multiple-cursors auto-complete csharp-mode yaml-mode flycheck-irony irony flycheck rainbow-delimiters pyvenv company-irony))))
 
-(require 'notmuch)
+; (require 'notmuch)
 
 (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
@@ -47,9 +47,9 @@
 (setq whitespace-style '(face empty tabs trailing))
 (global-whitespace-mode t)
 
-(require 'clang-format)
-(global-set-key (kbd "C-c i") 'clang-format-region)
-(global-set-key (kbd "C-c u") 'clang-format-buffer)
+; (require 'clang-format)
+; (global-set-key (kbd "C-c i") 'clang-format-region)
+; (global-set-key (kbd "C-c u") 'clang-format-buffer)
 
 ;; FLYCHECK / IRONY
 (add-hook 'c++-mode-hook 'irony-mode)
@@ -61,6 +61,7 @@
 (setq flycheck-python-flake8-executable "@emacs_python@")
 (setq flycheck-python-pylint-executable "@emacs_python@")
 (setq flycheck-python-pycompile-executable "@emacs_python@")
+(add-to-list 'irony-additional-clang-options "-isystem @c_header_include_path@")
 (add-hook 'python-mode-hook 'flycheck-mode)
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 (eval-after-load 'flycheck

@@ -5,6 +5,7 @@ in
 stdenv.mkDerivation rec {
   name = "my-emacs-config";
   emacs_python = "${emacs_python_package}/bin/python3";
+  c_header_include_path = "${pkgs.clang.libc_dev}/include";
   buildInputs = [ emacs_python_package ];
   emacs_template = ./configs/emacs_template;
   buildCommand = ''
