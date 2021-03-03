@@ -172,7 +172,6 @@ mode "resize" {
         # back to normal: Enter or Escape or $mod+r
         bindsym Return mode "default"
         bindsym Escape mode "default"
-        bindsym $mod+r mode "default"
 }
 
 bindsym $mod+r mode "resize"
@@ -184,10 +183,14 @@ mode "move_workspace" {
         bindsym Left move workspace to output left
         bindsym Up move workspace to output up
 
+        bindcode 44 move workspace to output left
+        bindcode 45 move workspace to output down
+        bindcode 46 move workspace to output up
+        bindcode 47 move workspace to output right
+
         # back to normal: Enter or Escape or $mod+r
         bindsym Return mode "default"
         bindsym Escape mode "default"
-        bindsym $mod+r mode "default"
 }
 
 bindsym $mod+o mode "move_workspace"
