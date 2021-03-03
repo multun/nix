@@ -32,11 +32,11 @@ in
     # proprietary stuff
     (pkgs.callPackage ./binaryninja.nix {
       pname = "binaryninja";
-      version = "2.1.2263";
+      version = "2.3";
       src = requireFile {
         name = "BinaryNinja-personal.zip";
         url = "https://binary.ninja/recover/";
-        sha256 = "18mlf7qlzj904p38ag2r1r7cwmqqlcj56ai3yjf47xri1nnp5bjx";
+        sha256 = "1kkxps3mn63ik34bfcrhp85hdfc7qr0hny8js6vyg9jl2af53qpk";
       };
     })
 
