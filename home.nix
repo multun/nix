@@ -272,8 +272,13 @@ in
 
   services.redshift = {
     enable = true;
-    latitude = "47";
+    tray = true;
+    latitude = "49";
     longitude = "2";
+    temperature = {
+      day = 5500;
+      night = 2600;
+    };
   };
 
   programs.home-manager = {
