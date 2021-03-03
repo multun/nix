@@ -26,8 +26,9 @@ in
     ghidra-bin
     radare2
     radare2-cutter
-    # unstable.python38Packages.binwalk-full
-    # python38Packages.bap
+    unstable.gnuradio-with-packages
+
+    unstable.python38Packages.binwalk-full
 
     # proprietary stuff
     (pkgs.callPackage ./binaryninja.nix {
