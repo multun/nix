@@ -14,6 +14,7 @@ in
   home.packages = with pkgs; [
     wineWowPackages.stable
 
+    vscode
     mypkgs.mdbg
 
     # rust stuff
