@@ -7,6 +7,10 @@ let nix_config = {
 in
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
     unstable = import <nixos-unstable> { config = nix_config; };
+    binaryninja_python = (unstable.python3.withPackages (ps: [
+      ps.flatbuffers
+      ps.pyside2
+    ]));
 in
 {
   home.enableDebugInfo = true;
@@ -18,38 +22,48 @@ in
     mypkgs.mdbg
 
     # rust stuff
-    rustc
-    cargo
-    rustfmt
+    (rust-bin.stable.latest.default.override {
+      extensions = [
+        "rustfmt"
+        "clippy"
+
+        # rust language server stuff
+        "rls"
+        "rust-src"
+        "rust-analysis"
+      ];
+    })
 
     # LSE stuff
     ghidra-bin
     radare2
     radare2-cutter
-    unstable.gnuradio-with-packages
+    nasm
 
     unstable.python38Packages.binwalk-full
 
     # proprietary stuff
-    (pkgs.callPackage ./binaryninja.nix {
+    # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
+    (unstable.callPackage ./binaryninja.nix {
       pname = "binaryninja";
-      version = "2.3";
+      version = "2.4";
       src = requireFile {
         name = "BinaryNinja-personal.zip";
         url = "https://binary.ninja/recover/";
-        sha256 = "1kkxps3mn63ik34bfcrhp85hdfc7qr0hny8js6vyg9jl2af53qpk";
+        sha256 = "0v14mwryljhl6a0ysfp9wrbv7jh7w2i2cd1gn7yn4l9fmxqy66dm";
       };
     })
 
-    (pkgs.callPackage ./binaryninja.nix {
-      pname = "binaryninja-dev";
-      version = "2.1.2403-dev";
-      src = requireFile {
-        name = "BinaryNinja-personal-dev.zip";
-        url = "https://binary.ninja/recover/";
-        sha256 = "0khly83szncy60zplxpshj3zgf185xy9g7x0lc4mkrsnb5hddg41";
-      };
-    })
+    # # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal-dev.zip)"
+    # (unstable.callPackage ./binaryninja.nix {
+    #   pname = "binaryninja-dev";
+    #   version = "2.3.2691-dev";
+    #   src = requireFile {
+    #     name = "BinaryNinja-personal-dev.zip";
+    #     url = "https://binary.ninja/recover/";
+    #     sha256 = "0di93l0fri1grhv0aph6j97dlxhgsbmmn8rfrzv3zq35j2wplvmq";
+    #   };
+    # })
 
     steam
 
@@ -99,6 +113,9 @@ in
     moreutils
     unrar
     valgrind
+    ninja
+    meson
+    readline
 
     # window manager & friends / dotfiles stuff
     alacritty
@@ -160,6 +177,12 @@ in
     libreoffice-fresh
     simple-scan
     usbutils
+
+    # notifications
+    libnotify
+
+    # productivity
+    unstable.super-productivity
 
     # social
     unstable.ripcord
@@ -239,14 +262,14 @@ in
         auto-complete
         csharp-mode
         yaml-mode
-        flycheck-irony
-        irony
+        # flycheck-irony
+        # irony
         flycheck
         # clang-format
         rainbow-delimiters
         pyvenv
         company
-        company-irony
+        # company-irony
         editorconfig
         which-key
       ])
@@ -255,14 +278,61 @@ in
 
   home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
   home.file.".config/i3/config".source = ./configs/i3config;
-  home.file.".config/i3status_rust.toml".source = ./configs/i3status_rust.toml;
+  home.file.".config/i3status-rust/config.toml".source = ./configs/i3status_rust.toml;
   home.file.".config/alacritty/alacritty.yml".source = ./configs/alacritty.yml;
   home.file.".config/mpv/mpv.conf".source = ./configs/mpv.conf;
   home.file.".slrnrc".source = ./slrnrc;
   home.file.".signature".source = ./signature;
-
+  home.file.".binaryninja/settings.json".source = pkgs.writeText "binaryninja-settings" (builtins.toJSON ({
+      "analysis.limits.cacheSize" = 64;
+      "analysis.types.TemplateSimplifier" = true;
+      "python.interpreter" = "${binaryninja_python}/lib/libpython3.so";
+      "python.virtualenv" = "${binaryninja_python}/${binaryninja_python.sitePackages}";
+      "triage.analysisMode" = "full";
+      "ui.debugMode" = true;
+      "ui.font.style" = "Regular";
+      "ui.style.hlil.scoping" = "braces";
+      "ui.view.graph.preferred" = true;
+      "updates.activeContent" = false;
+  }));
   home.file.".config/obs-studio/plugins/v4l2sink".source =
     "${pkgs.obs-v4l2sink}/share/obs/obs-plugins/v4l2sink";
+
+  # dunst is a notification deamon
+  services.dunst = {
+    enable = true;
+    settings = rec {
+      global = {
+        follow = "keyboard";
+        markup = "none";
+        format = ''
+          <big><b>%s</b></big>
+          %b'';
+        sort = false;
+        alignment = "left";
+        bounce_freq = 0;
+        word_wrap = true;
+        ignore_newline = false;
+        geometry = "450x100-15+49";
+        transparency = 10;
+        separator_height = 2;
+        padding = 12;
+        horizontal_padding = 20;
+        line_height = 3;
+        separator_color = "frame";
+        frame_width = 2;
+        frame_color = "#EC5F67";
+      };
+
+      urgency_normal = {
+        foreground = "#CDD3DE";
+        background = "#101010";
+        timeout = 6;
+      };
+      urgency_low = urgency_normal;
+      urgency_critical = urgency_normal;
+    };
+  };
 
   services.gpg-agent = {
     enable = true;

@@ -7,6 +7,10 @@ stdenv.mkDerivation rec {
 
   buildPhase = ":";
 
+  # this is done by hand for now
+  # TODO: use wrapQtAppsHook
+  dontWrapQtApps = true;
+
   installPhase = ''
     mkdir -p $out/bin
     mkdir -p $out/opt/${pname}

@@ -1,4 +1,5 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
 , pkgconfig
 , meson
@@ -31,7 +32,7 @@ stdenv.mkDerivation rec {
     readline
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A tiny debugger";
     homepage = "https://github.com/multun/mdbg";
     license = licenses.mit;
