@@ -95,13 +95,6 @@ format = "{1m}"
 block = "sound"
 
 [[block]]
-block = "battery"
-driver = "upower"
-device = "DisplayDevice"
-interval = 30
-format = "{percentage}% {time}"
-
-[[block]]
 block = "time"
 interval = 60
 format = "%a %d/%m %R"

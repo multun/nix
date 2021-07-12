@@ -44,15 +44,6 @@ in
 
     # proprietary stuff
     # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
-    (unstable.callPackage ./binaryninja.nix {
-      pname = "binaryninja";
-      version = "2.4";
-      src = requireFile {
-        name = "BinaryNinja-personal.zip";
-        url = "https://binary.ninja/recover/";
-        sha256 = "0v14mwryljhl6a0ysfp9wrbv7jh7w2i2cd1gn7yn4l9fmxqy66dm";
-      };
-    })
 
     # # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal-dev.zip)"
     # (unstable.callPackage ./binaryninja.nix {
@@ -130,6 +121,15 @@ in
     numix-icon-theme
     hicolor-icon-theme
 
+    # sway-specific
+    swaylock
+    swayidle
+    wl-clipboard
+    j4-dmenu-desktop
+    bemenu
+    wdisplays # arandr
+    kanshi # autorandr
+
     # CLI utils
     exa
     ripgrep
@@ -169,7 +169,7 @@ in
     zathura
     okular
     evince
-    firefox
+    firefox-wayland
     chromium
     android-file-transfer
     keepassxc
@@ -276,6 +276,14 @@ in
     );
   };
 
+  wayland.windowManager.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+    systemdIntegration = true;
+    config = null;
+    extraConfig = builtins.readFile ./configs/sway;
+  };
+
   home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
   home.file.".config/i3/config".source = ./configs/i3config;
   home.file.".config/i3status-rust/config.toml".source = ./configs/i3status_rust.toml;
@@ -340,19 +348,81 @@ in
     enableSshSupport = true;
   };
 
-  services.redshift = {
+  services.gammastep = {
     enable = true;
     tray = true;
-    latitude = "49";
-    longitude = "2";
-    temperature = {
-      day = 5500;
-      night = 2600;
-    };
+    provider = "manual";
+    dawnTime = "6:00-7:45";
+    duskTime = "18:35-20:15";
   };
 
-  programs.home-manager = {
+  programs.waybar = {
     enable = true;
+    systemd.enable = true;
+    style = builtins.readFile ./configs/waybar.css;
+    settings = [
+      {
+        layer = "top";
+        position = "bottom";
+        height = 30;
+        modules-left = [ "sway/workspaces" "sway/mode" "wlr/taskbar" ];
+        modules-center = [ "sway/window" ];
+        modules-right = [
+          "memory"
+          "cpu"
+          "temperature"
+          "pulseaudio"
+          "tray"
+          "clock"
+        ];
+
+        modules = {
+          "sway/workspaces" = {
+            disable-scroll = true;
+            all-outputs = true;
+          };
+
+          "sway/mode" = {
+            format = "<span style=\"italic\">{}</span>";
+          };
+
+          "tray" = {
+            icon-size = 21;
+            spacing = 10;
+          };
+
+          "clock" = {
+            tooltip-format = "{:%Y-%m-%d | %H:%M}";
+            format-alt = "{:%Y-%m-%d}";
+          };
+
+          "cpu" = {
+            format = "{usage}% ";
+          };
+
+          "memory" = {
+            format = "{}% ";
+          };
+
+          "pulseaudio" = {
+            format = "{volume}% {icon}";
+            format-bluetooth = "{volume}% {icon}";
+            format-muted = "";
+            format-icons = {
+              headphones = "";
+              handsfree = "";
+              headset = "";
+              phone = "";
+              portable = "";
+              car = "";
+              default = [ "" "" ];
+            };
+            on-click = "pavucontrol";
+          };
+
+        };
+      }
+    ];
   };
 
   programs.git = {
@@ -365,5 +435,9 @@ in
   qt = {
     enable = true;
     platformTheme = "gtk";
+  };
+
+  programs.home-manager = {
+    enable = true;
   };
 }
