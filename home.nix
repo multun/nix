@@ -15,12 +15,57 @@ in
 {
   home.enableDebugInfo = true;
 
+  programs.vscode = {
+    enable = true;
+    package = unstable.vscodium;
+    userSettings = {
+      "update.channel" = "none";
+      "files.insertFinalNewline" = true;
+      "files.trimTrailingWhitespace" = true;
+      "workbench.colorTheme" = "Monokai";
+      "mesonbuild.configureOnOpen" = true;
+      "editor.fontSize" = 12;
+      "editor.insertSpaces" = true;
+      "editor.detectIndentation" = false;
+      "editor.tabSize" = 4;
+    };
+    keybindings = [
+      {
+        key = "ctrl+alt+b";
+        command = "workbench.action.toggleActivityBarVisibility";
+      }
+      {
+        key = "ctrl+m";
+        command = "workbench.action.toggleActivityBarVisibility";
+      }
+    ];
+    extensions = with unstable.vscode-extensions; [
+      ms-vscode.cpptools
+      arrterian.nix-env-selector
+      bbenoist.Nix
+      ms-python.python
+      redhat.vscode-yaml
+      redhat.java
+      matklad.rust-analyzer
+      tamasfe.even-better-toml
+      (unstable.vscode-utils.buildVscodeMarketplaceExtension {
+        mktplcRef = {
+          name = "meson";
+          publisher = "asabil";
+          version = "1.3.0";
+          sha256 = "sha256-QMp3dEFx6Mu5pgzklylW6b/ugYbtbT/qz8IeeuzPZeA=";
+        };
+        meta = with lib; {
+          license = licenses.asl20;
+        };
+      })
+    ];
+  };
+
   home.packages = with pkgs; [
     wineWowPackages.stable
 
-    vscode
     mypkgs.mdbg
-
     # rust stuff
     (rust-bin.stable.latest.default.override {
       extensions = [
@@ -71,7 +116,7 @@ in
     aspell
     aspellDicts.fr
     aspellDicts.en-computers
-    # texlive.combined.scheme-full
+    texlive.combined.scheme-full
     vim
     slrn
     cmake
@@ -81,6 +126,7 @@ in
     uftrace
     graphviz
     imagemagick
+    gnome.gitg
     # sourcetrail
 
     # sysadmin
@@ -124,11 +170,40 @@ in
     # sway-specific
     swaylock
     swayidle
+    swaybg
+    grim
+    slurp
     wl-clipboard
     j4-dmenu-desktop
     bemenu
     wdisplays # arandr
     kanshi # autorandr
+    (stdenv.mkDerivation {
+      pname = "screenshot";
+      version = "1.0";
+      dontUnpack = true;
+      installPhase = ''
+      mkdir -p $out/{bin,share/applications}
+
+      cat <<EOF > $out/bin/screenshot
+      #!/bin/sh
+      mkdir -p ~/screenshots
+      exec ${grim}/bin/grim -t jpeg -g "\$(${slurp}/bin/slurp)" ~/screenshots/"\$(date +%Y-%m-%d_%H-%m-%s)".jpg
+      EOF
+      chmod +x $out/bin/screenshot
+
+      cat <<EOF > $out/share/applications/screenshot.desktop
+      [Desktop Entry]
+      Name=Screenshot (Wayland)
+      GenericName=Screenshot
+      Comment=Take a screenshot, save it in ~/screenshots
+      Exec=screenshot
+      Terminal=false
+      Type=Application
+      Categories=Screenshot;
+      EOF
+      '';
+    })
 
     # CLI utils
     exa
@@ -170,7 +245,24 @@ in
     okular
     evince
     firefox-wayland
-    chromium
+    (stdenv.mkDerivation {
+      pname = "chromium-wayland";
+      version = chromium.version;
+      buildInputs = [ chromium ];
+      src = ./.;
+      installPhase = ''
+      mkdir -p $out/bin
+      cat > $out/bin/chromium-wayland <<EOF
+      #!/bin/sh
+      exec ${chromium}/bin/chromium --enable-features=UseOzonePlatform --ozone-platform=wayland "\$@"
+      EOF
+      chmod +x $out/bin/chromium-wayland
+
+      mkdir -p $out/share/applications/
+      out_desktop=$out/share/applications/chromium-browser-wayland.desktop
+      sed 's/^Exec=chromium/Exec=chromium-wayland/g; s/^Name=Chromium/Name=Chromium (Wayland)/g' ${chromium}/share/applications/chromium-browser.desktop > $out_desktop
+      '';
+    })
     android-file-transfer
     keepassxc
     screenkey
@@ -191,6 +283,7 @@ in
     mpv
     vlc
     audacity
+    quodlibet
     pavucontrol
     ffmpeg
     vokoscreen # screen recorder
@@ -392,8 +485,8 @@ in
           };
 
           "clock" = {
-            tooltip-format = "{:%Y-%m-%d | %H:%M}";
-            format-alt = "{:%Y-%m-%d}";
+            tooltip-format = "<tt>{calendar}</tt>";
+            format-alt = "{:%d/%m/%Y}";
           };
 
           "cpu" = {
@@ -420,6 +513,10 @@ in
             on-click = "pavucontrol";
           };
 
+          "wlr/taskbar" = {
+            on-click = "activate";
+            on-click-middle = "close";
+          };
         };
       }
     ];

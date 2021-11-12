@@ -193,3 +193,9 @@ flash_ergodox() {
 
     teensy-loader-cli -v -mmcu=atmega32u4 -w "$last_download"
 }
+
+
+upload() {
+    scp "$1" multun.net:/srv/www/dl.multun.net/ \
+        && printf '%s\n' "https://dl.multun.net/${1##*/}"
+}

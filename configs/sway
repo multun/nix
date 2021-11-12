@@ -10,19 +10,38 @@ input *  {
 input * repeat_delay 200
 input * repeat_rate 60
 
-smart_gaps on
-gaps inner 7
 
-# Removes the title bar of each window.
-for_window [class=".*"] border none
-default_border none
-default_floating_border none
+set $border_style pixel 2
+
+# TODO: uncomment when the kernel and sway bugs are fixed
+# # FOR RELOAD: updates the border of existing windows
+# for_window [class=".*"] border $border_style
+default_border $border_style
+default_floating_border $border_style
+
+# FOR RELOAD: updates the gaps of existing windows
+gaps inner 0
+
+hide_edge_borders both
+smart_borders on
 
 set $lg_screen "Goldstar Company Ltd LG HDR 4K 0x0000A727"
 set $benq_screen "BenQ Corporation BenQ BL2410 GBC06817SL0"
+set $lg_wallpaper   Pictures/prologin_cat_4K_vertical.png
+set $benq_wallpaper Pictures/prologin_cat_4K.png
 
-output $lg_screen   mode 3840x2160@60Hz scale 1.3     position 0,139
-output $benq_screen mode 1920x1080@60Hz transform 270 position 2953,0
+# # vertical benq
+# output $lg_screen   mode 3840x2160@60Hz scale 1.3     position 0,139
+# output $benq_screen mode 1920x1080@60Hz transform 270 position 2953,0
+
+# vertical LG
+output $lg_screen   mode 3840x2160@60Hz scale 1.3 transform 270 position 0,0
+output $benq_screen mode 1920x1080@60Hz position 1661,1550
+
+exec swaybg -o $lg_screen   -i $lg_wallpaper \
+            -o $benq_screen -i $benq_wallpaper
+
+input type:tablet_tool map_to_output $benq_screen
 
 font pango:Hack 8
 
@@ -39,7 +58,7 @@ bindsym $mod+Control+k exec keepassxc
 # kill focused window
 bindsym $mod+Shift+a kill
 
-bindsym $mod+d exec j4-dmenu-desktop --dmenu="bemenu -i" --no-generic --term=$terminal --no-exec | xargs swaymsg exec
+bindsym $mod+d exec j4-dmenu-desktop --dmenu="bemenu -i" --no-generic --term=$terminal --no-exec | xargs swaymsg exec --
 
 # change focus
 bindcode $mod+44 focus left
@@ -129,10 +148,7 @@ bindcode $mod+Shift+17 move container to workspace number $ws8
 bindcode $mod+Shift+18 move container to workspace number $ws9
 bindcode $mod+Shift+19 move container to workspace number $ws10
 
-# reload the configuration file
-bindsym $mod+Shift+c reload
-bindsym $mod+Shift+r restart
-# exit i3 (logs you out of your X session)
+bindsym $mod+Shift+r reload
 bindsym $mod+Shift+e exec "swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway?' -B 'Yes, exit sway' 'swaymsg exit'"
 
 # resize window (you can also use the mouse for that)
@@ -207,5 +223,6 @@ bar {
     binding_mode       #FF5555  #FF5555  #F8F8F2
   }
 
-  status_command waybar
+  # prevent swaybar from starting, as waybar already starts with systemd
+  swaybar_command true
 }
