@@ -48,6 +48,8 @@ font pango:Hack 8
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
+focus_follows_mouse always
+
 bindsym $mod+Return exec myxcwd $terminal --working-directory={} -e zsh
 
 bindsym $mod+Shift+Return exec emacsclient -c -n -e '(switch-to-buffer nil)'

@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 let nix_config = {
     allowUnfree = true;
     documentation.dev.enable = true;
@@ -7,18 +7,141 @@ let nix_config = {
 in
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
     unstable = import <nixos-unstable> { config = nix_config; };
+    master = import (builtins.fetchTarball {
+      name = "nixos-unstable-2022-04-10";
+      url = "https://github.com/nixos/nixpkgs/archive/2796dcfbdf5c38e8bc8c7a50f1032113bb9af7ff.tar.gz";
+      sha256 = "183rx4x58rmc78lyysjqxhm6s2a9h98ycpdy3him1hvazqnb77di";
+    }) { config = nix_config; };
     binaryninja_python = (unstable.python3.withPackages (ps: [
       ps.flatbuffers
       ps.pyside2
     ]));
+    custom-steam = (pkgs.steam.override { extraPkgs = pkgs: [ pkgs.mono ] ;});
+
+    wayland-screenshot = (with pkgs; stdenv.mkDerivation {
+      pname = "screenshot";
+      version = "1.0";
+      dontUnpack = true;
+      installPhase = ''
+      mkdir -p $out/{bin,share/applications}
+
+      cat <<EOF > $out/bin/screenshot
+      #!/bin/sh
+      mkdir -p ~/screenshots
+      exec ${grim}/bin/grim -t jpeg -g "\$(${slurp}/bin/slurp)" ~/screenshots/"\$(date +%Y-%m-%d_%H-%m-%s)".jpg
+      EOF
+      chmod +x $out/bin/screenshot
+
+      cat <<EOF > $out/share/applications/screenshot.desktop
+      [Desktop Entry]
+      Name=Screenshot (Wayland)
+      GenericName=Screenshot
+      Comment=Take a screenshot, save it in ~/screenshots
+      Exec=screenshot
+      Terminal=false
+      Type=Application
+      Categories=Screenshot;
+      EOF
+      '';
+    });
+
+    # intellij isn't really ready for wayland, but _JAVA_AWT_WM_NONREPARENTING is required to make it kinda work
+    idea-wayland = (with pkgs; stdenv.mkDerivation {
+      name = "idea-wayland";
+      # version = jetbrains.idea-community.version;
+      buildInputs = [ jetbrains.idea-community ];
+      src = ./.;
+      installPhase = ''
+      mkdir -p $out/bin
+      cat > $out/bin/idea-wayland <<EOF
+      #!/bin/sh
+      export _JAVA_AWT_WM_NONREPARENTING=1
+      exec ${jetbrains.idea-community}/bin/idea-community "\$@"
+      EOF
+      chmod +x $out/bin/idea-wayland
+
+      mkdir -p $out/share/applications/
+      out_desktop=$out/share/applications/idea-wayland.desktop
+      sed 's/^Exec=idea-community/Exec=idea-wayland/g; s/^Name=IDEA/Name=IDEA (Wayland)/g' ${jetbrains.idea-community}/share/applications/idea-community.desktop > $out_desktop
+      '';
+    });
+
+    chromium-wayland = (with pkgs; stdenv.mkDerivation {
+      pname = "chromium-wayland";
+      version = chromium.version;
+      buildInputs = [ chromium ];
+      src = ./.;
+      installPhase = ''
+      mkdir -p $out/bin
+      cat > $out/bin/chromium-wayland <<EOF
+      #!/bin/sh
+      exec ${chromium}/bin/chromium --enable-features=UseOzonePlatform --ozone-platform=wayland "\$@"
+      EOF
+      chmod +x $out/bin/chromium-wayland
+
+      mkdir -p $out/share/applications/
+      out_desktop=$out/share/applications/chromium-browser-wayland.desktop
+      sed 's/^Exec=chromium/Exec=chromium-wayland/g; s/^Name=Chromium/Name=Chromium (Wayland)/g' ${chromium}/share/applications/chromium-browser.desktop > $out_desktop
+      '';
+    });
+
+    vscode-insider = (pkgs.vscode.override {isInsiders = true;}).overrideAttrs (oldAttrs: rec {
+      src = (builtins.fetchTarball {
+        url = "https://update.code.visualstudio.com/latest/linux-x64/insider";
+        sha256 = "0j2fffnghkp6amcsk74ws0p3168bbd1vk0ikay7lwpv62x78yn58";
+      });
+      version = "latest";
+    });
+
+
+    makeWaylandVSCode = ({ base, pname, binName }:
+      unstable.stdenv.mkDerivation {
+        inherit pname;  # must be kept this way for home manager to work
+        version = base.version;
+        buildInputs = [ base ];
+        src = ./.;
+        installPhase = ''
+          mkdir -p $out/bin
+
+          cat > $out/bin/${binName}-wayland <<EOF
+          #!/bin/sh
+          exec ${base}/bin/${binName} --enable-features=UseOzonePlatform --ozone-platform=wayland "\$@"
+          EOF
+          chmod +x $out/bin/${binName}-wayland
+
+          mkdir -p $out/share/applications/
+          in_desktop=${base}/share/applications/${binName}.desktop
+          out_desktop=$out/share/applications/${binName}-wayland.desktop
+          sed 's/^Exec=${binName}/Exec=${binName}-wayland/g; s/^Name=.*/Name=${binName} (Wayland)/g' $in_desktop > $out_desktop
+      '';
+      }
+    );
+
+    vscode-wayland = makeWaylandVSCode { base = vscode-insider; pname = "vscode"; binName = "code-insiders"; };
+    codium-wayland = makeWaylandVSCode { base = pkgs.codium; pname = "vscodium"; binName = "codium"; };
 in
 {
   home.enableDebugInfo = true;
 
+  home.activation.copyVSCodeConfig = {
+    after = [ "linkGeneration" ];
+    before = [];
+    data = ''
+      configPath=${config.home.homeDirectory}/.config/VSCodium/User/settings.json
+      if [ -L "$configPath" ]; then
+          realConfigPath=$(readlink -f "$configPath")
+          rm -f "$configPath"
+          cp "$realConfigPath" "$configPath"
+      fi
+    '';
+  };
+
   programs.vscode = {
     enable = true;
-    package = unstable.vscodium;
+    package = vscode-wayland;
     userSettings = {
+      "telemetry.enableCrashReporter" = false;
+      "telemetry.enableTelemetry" = false;
       "update.channel" = "none";
       "files.insertFinalNewline" = true;
       "files.trimTrailingWhitespace" = true;
@@ -39,10 +162,10 @@ in
         command = "workbench.action.toggleActivityBarVisibility";
       }
     ];
-    extensions = with unstable.vscode-extensions; [
+    extensions = with pkgs.vscode-extensions; [
       ms-vscode.cpptools
       arrterian.nix-env-selector
-      bbenoist.Nix
+      bbenoist.nix
       ms-python.python
       redhat.vscode-yaml
       redhat.java
@@ -67,17 +190,18 @@ in
 
     mypkgs.mdbg
     # rust stuff
-    (rust-bin.stable.latest.default.override {
-      extensions = [
-        "rustfmt"
-        "clippy"
+    # (rust-bin.nightly.latest.default.override {
+    #   extensions = [
+    #     "rustfmt"
+    #     "clippy"
 
-        # rust language server stuff
-        "rls"
-        "rust-src"
-        "rust-analysis"
-      ];
-    })
+    #     # rust language server stuff
+    #     "rls"
+    #     "rust-src"
+    #     "rust-analysis"
+    #   ];
+    # })
+    rustup
 
     # LSE stuff
     ghidra-bin
@@ -85,29 +209,27 @@ in
     radare2-cutter
     nasm
 
-    unstable.python38Packages.binwalk-full
-
     # proprietary stuff
     # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
+    (pkgs.callPackage ./binaryninja.nix {
+      pname = "binaryninja";
+      version = "unknown";
+      src = requireFile {
+        name = "BinaryNinja-personal.zip";
+        url = "https://binary.ninja/recover/";
+        sha256 = "0v14mwryljhl6a0ysfp9wrbv7jh7w2i2cd1gn7yn4l9fmxqy66dm";
+      };
+    })
 
-    # # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal-dev.zip)"
-    # (unstable.callPackage ./binaryninja.nix {
-    #   pname = "binaryninja-dev";
-    #   version = "2.3.2691-dev";
-    #   src = requireFile {
-    #     name = "BinaryNinja-personal-dev.zip";
-    #     url = "https://binary.ninja/recover/";
-    #     sha256 = "0di93l0fri1grhv0aph6j97dlxhgsbmmn8rfrzv3zq35j2wplvmq";
-    #   };
-    # })
-
-    steam
+    # games
+    custom-steam
+    custom-steam.run
+    minecraft
 
     # nix stuff
     nix-review
     nix-index
     nixpkgs-fmt
-    steam-run
 
     # acu stuff
     fira
@@ -159,6 +281,9 @@ in
     terminus_font
     font-awesome-ttf
     font-awesome
+    roboto
+    lato
+    roboto-mono
     powerline-fonts
     i3status-rust
     dejavu_fonts
@@ -178,32 +303,7 @@ in
     bemenu
     wdisplays # arandr
     kanshi # autorandr
-    (stdenv.mkDerivation {
-      pname = "screenshot";
-      version = "1.0";
-      dontUnpack = true;
-      installPhase = ''
-      mkdir -p $out/{bin,share/applications}
-
-      cat <<EOF > $out/bin/screenshot
-      #!/bin/sh
-      mkdir -p ~/screenshots
-      exec ${grim}/bin/grim -t jpeg -g "\$(${slurp}/bin/slurp)" ~/screenshots/"\$(date +%Y-%m-%d_%H-%m-%s)".jpg
-      EOF
-      chmod +x $out/bin/screenshot
-
-      cat <<EOF > $out/share/applications/screenshot.desktop
-      [Desktop Entry]
-      Name=Screenshot (Wayland)
-      GenericName=Screenshot
-      Comment=Take a screenshot, save it in ~/screenshots
-      Exec=screenshot
-      Terminal=false
-      Type=Application
-      Categories=Screenshot;
-      EOF
-      '';
-    })
+    wayland-screenshot
 
     # CLI utils
     exa
@@ -244,25 +344,8 @@ in
     zathura
     okular
     evince
-    firefox-wayland
-    (stdenv.mkDerivation {
-      pname = "chromium-wayland";
-      version = chromium.version;
-      buildInputs = [ chromium ];
-      src = ./.;
-      installPhase = ''
-      mkdir -p $out/bin
-      cat > $out/bin/chromium-wayland <<EOF
-      #!/bin/sh
-      exec ${chromium}/bin/chromium --enable-features=UseOzonePlatform --ozone-platform=wayland "\$@"
-      EOF
-      chmod +x $out/bin/chromium-wayland
-
-      mkdir -p $out/share/applications/
-      out_desktop=$out/share/applications/chromium-browser-wayland.desktop
-      sed 's/^Exec=chromium/Exec=chromium-wayland/g; s/^Name=Chromium/Name=Chromium (Wayland)/g' ${chromium}/share/applications/chromium-browser.desktop > $out_desktop
-      '';
-    })
+    master.firefox-wayland
+    chromium-wayland
     android-file-transfer
     keepassxc
     screenkey
@@ -275,6 +358,8 @@ in
 
     # productivity
     unstable.super-productivity
+    (unstable.callPackage ./furtherance.nix {})
+
 
     # social
     unstable.ripcord
@@ -288,7 +373,6 @@ in
     ffmpeg
     vokoscreen # screen recorder
     obs-studio
-    obs-v4l2sink
 
     # image processing
     scrot
@@ -296,6 +380,30 @@ in
     gimp
     feh
     inkscape
+    # (let inkscape = callPackage ./inkscape.nix { lcms = lcms2; additionalPythonDeps = (ps: [ps.pygobject3 ps.pygments]); };
+    #      inksyntax = (stdenv.mkDerivation {
+    #        name = "inksyntax";
+    #        version = "2015";
+
+    #        src = fetchFromGitHub {
+    #          owner = "woernsn";
+    #          repo = "inksyntax";
+    #          rev = "7fb7e52fddc55ddbc9308c6333fd134f3707891e";
+    #          sha256 = "sha256-tfHioeFoZAk40EVTKqeLNKbgtjRmA1LmrB3L0Qaiv78=";
+    #        };
+
+    #        installPhase = ''
+    #          runHook preInstall
+
+    #          mkdir -p "$out/share/inkscape/extensions"
+    #          cp -p *.inx *.py "$out/share/inkscape/extensions/"
+    #          find "$out/share/inkscape/extensions/" -name "*.py" -exec chmod +x {} \;
+
+    #          runHook postInstall
+    #        '';
+    #      });
+    #  in (inkscape-with-extensions.override { inherit inkscape; inkscapeExtensions = [ inksyntax ]; })
+    # )
     xournal
 
     # 3d graphics
@@ -315,9 +423,12 @@ in
     geogebra
 
     # sncf
-    gradle_jdk11
-    jdk11
-    jetbrains.idea-community
+    # gradle_jdk11
+    sops
+    gnupg
+    jdk17
+    idea-wayland
+    dbeaver
   ];
   fonts.fontconfig.enable = true;
 
@@ -396,8 +507,6 @@ in
       "ui.view.graph.preferred" = true;
       "updates.activeContent" = false;
   }));
-  home.file.".config/obs-studio/plugins/v4l2sink".source =
-    "${pkgs.obs-v4l2sink}/share/obs/obs-plugins/v4l2sink";
 
   # dunst is a notification deamon
   services.dunst = {
@@ -446,7 +555,8 @@ in
     tray = true;
     provider = "manual";
     dawnTime = "6:00-7:45";
-    duskTime = "18:35-20:15";
+    duskTime = "18:35-22:15";
+    temperature.night = 4500;
   };
 
   programs.waybar = {
@@ -532,6 +642,14 @@ in
   qt = {
     enable = true;
     platformTheme = "gtk";
+  };
+
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Yaru-dark";
+      package = pkgs.yaru-theme;
+    };
   };
 
   programs.home-manager = {
