@@ -7,11 +7,6 @@ let nix_config = {
 in
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
     unstable = import <nixos-unstable> { config = nix_config; };
-    master = import (builtins.fetchTarball {
-      name = "nixos-unstable-2022-04-10";
-      url = "https://github.com/nixos/nixpkgs/archive/2796dcfbdf5c38e8bc8c7a50f1032113bb9af7ff.tar.gz";
-      sha256 = "183rx4x58rmc78lyysjqxhm6s2a9h98ycpdy3him1hvazqnb77di";
-    }) { config = nix_config; };
     binaryninja_python = (unstable.python3.withPackages (ps: [
       ps.flatbuffers
       ps.pyside2
@@ -188,7 +183,6 @@ in
   home.packages = with pkgs; [
     wineWowPackages.stable
 
-    mypkgs.mdbg
     # rust stuff
     # (rust-bin.nightly.latest.default.override {
     #   extensions = [
@@ -203,12 +197,6 @@ in
     # })
     rustup
 
-    # LSE stuff
-    ghidra-bin
-    radare2
-    radare2-cutter
-    nasm
-
     # proprietary stuff
     # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
     (pkgs.callPackage ./binaryninja.nix {
@@ -217,7 +205,7 @@ in
       src = requireFile {
         name = "BinaryNinja-personal.zip";
         url = "https://binary.ninja/recover/";
-        sha256 = "0v14mwryljhl6a0ysfp9wrbv7jh7w2i2cd1gn7yn4l9fmxqy66dm";
+        sha256 = "02x5kkqlnzqz3adiv49d1nql1ka4kq03bsddls797rj399ic7xbk";
       };
     })
 
@@ -248,8 +236,6 @@ in
     uftrace
     graphviz
     imagemagick
-    gnome.gitg
-    # sourcetrail
 
     # sysadmin
     virtmanager
@@ -310,11 +296,9 @@ in
     ripgrep
     fzf
     file
-    lf
+    lf  # ranger style browser
     fd
-    htop
-    psmisc
-    fortune
+    psmisc # for pstree, peekfd
     iftop
     bat
     tree
@@ -327,15 +311,7 @@ in
     xclip
     tokei
 
-    # emails
-    isync   # receive
-    notmuch # index and search
-    astroid # view
-    msmtp   # send
-
     # networking
-    wpa_supplicant_gui
-    aircrack-ng
     aria2
     rsync
     nmap
@@ -344,13 +320,11 @@ in
     zathura
     okular
     evince
-    master.firefox-wayland
+    unstable.firefox-wayland
     chromium-wayland
     android-file-transfer
     keepassxc
-    screenkey
     libreoffice-fresh
-    simple-scan
     usbutils
 
     # notifications
@@ -360,18 +334,15 @@ in
     unstable.super-productivity
     (unstable.callPackage ./furtherance.nix {})
 
-
     # social
     unstable.ripcord
 
     # audio / video
     mpv
     vlc
-    audacity
     quodlibet
     pavucontrol
     ffmpeg
-    vokoscreen # screen recorder
     obs-studio
 
     # image processing
