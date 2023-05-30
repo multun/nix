@@ -421,10 +421,16 @@ in
   };
 
 
-  # https://github.com/Sarcasm/irony-mode/issues/469
-  services.emacs.enable = true;
+  services.emacs = {
+    enable = true;
+    # the daemon needs to have the emacs load-path properly configured, so that
+    # packages can be found by init scripts. as the load path is setup by a shell
+    # wrapper at build time, the service has to use the properly wrapped program
+    package = config.programs.emacs.finalPackage;
+  };
   programs.emacs = {
     enable = true;
+    package = pkgs.emacs28;
     extraPackages = epkgs: (
       (with epkgs; [
         rust-mode
@@ -432,24 +438,21 @@ in
         markdown-mode
         nix-mode
         magit
-        flycheck-pyflakes
         multiple-cursors
         auto-complete
         csharp-mode
         yaml-mode
-        # flycheck-irony
-        # irony
-        flycheck
-        # clang-format
         rainbow-delimiters
         pyvenv
         company
-        # company-irony
         editorconfig
         which-key
+        flycheck
+        flycheck-pyflakes
       ])
     );
   };
+  home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
 
   wayland.windowManager.sway = {
     enable = true;
@@ -459,7 +462,6 @@ in
     extraConfig = builtins.readFile ./configs/sway;
   };
 
-  home.file.".emacs".source = "${mypkgs.my-emacs-config}/.emacs";
   home.file.".config/i3/config".source = ./configs/i3config;
   home.file.".config/i3status-rust/config.toml".source = ./configs/i3status_rust.toml;
   home.file.".config/alacritty/alacritty.yml".source = ./configs/alacritty.yml;
