@@ -90,7 +90,6 @@ let mypkgs = import ./mypkgs.nix { inherit pkgs; };
       version = "latest";
     });
 
-
     makeWaylandVSCode = ({ base, pname, binName }:
       unstable.stdenv.mkDerivation {
         inherit pname;  # must be kept this way for home manager to work
@@ -340,30 +339,6 @@ in
     gthumb
     gimp
     unstable.inkscape
-    # (let inkscape = callPackage ./inkscape.nix { lcms = lcms2; additionalPythonDeps = (ps: [ps.pygobject3 ps.pygments]); };
-    #      inksyntax = (stdenv.mkDerivation {
-    #        name = "inksyntax";
-    #        version = "2015";
-
-    #        src = fetchFromGitHub {
-    #          owner = "woernsn";
-    #          repo = "inksyntax";
-    #          rev = "7fb7e52fddc55ddbc9308c6333fd134f3707891e";
-    #          sha256 = "sha256-tfHioeFoZAk40EVTKqeLNKbgtjRmA1LmrB3L0Qaiv78=";
-    #        };
-
-    #        installPhase = ''
-    #          runHook preInstall
-
-    #          mkdir -p "$out/share/inkscape/extensions"
-    #          cp -p *.inx *.py "$out/share/inkscape/extensions/"
-    #          find "$out/share/inkscape/extensions/" -name "*.py" -exec chmod +x {} \;
-
-    #          runHook postInstall
-    #        '';
-    #      });
-    #  in (inkscape-with-extensions.override { inherit inkscape; inkscapeExtensions = [ inksyntax ]; })
-    # )
     xournal
 
     # system config
@@ -387,8 +362,6 @@ in
 
   nixpkgs.config = nix_config;
 
-  # services.kdeconnect.enable = true;
-
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
@@ -408,7 +381,7 @@ in
     settings = {
       main = {
         font = "Source Code Pro for Powerline:size=10";
-	dpi-aware = "yes";
+        dpi-aware = "yes";
       };
       colors = {
         regular0 = "000000";  # black
