@@ -27,8 +27,8 @@ smart_borders on
 
 set $lg_screen "Goldstar Company Ltd LG HDR 4K 0x0000A727"
 set $benq_screen "BenQ Corporation BenQ BL2410 GBC06817SL0"
-set $lg_wallpaper   Pictures/prologin_cat_4K_vertical.png
-set $benq_wallpaper Pictures/prologin_cat_4K.png
+set $lg_wallpaper   Pictures/wallpaper_vertical.png
+set $benq_wallpaper Pictures/wallpaper_horizontal.png
 
 # # vertical benq
 # output $lg_screen   mode 3840x2160@60Hz scale 1.3     position 0,139
