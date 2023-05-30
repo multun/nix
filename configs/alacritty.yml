@@ -68,7 +68,7 @@ font:
     #   - (Linux) monospace
     #   - (Windows) Consolas
     # family: terminus
-    family: Ubuntu Mono derivative Powerline
+    family: Source Code Pro for Powerline
     # The `style` can be specified to pick a specific face.
     #style: Regular
 
@@ -110,22 +110,6 @@ font:
     x: 0
     y: 0
 
-  # Thin stroke font rendering (macOS only)
-  #
-  # Thin strokes are suitable for retina displays, but for non-retina screens
-  # it is recommended to set `use_thin_strokes` to `false`
-  #
-  # macOS >= 10.14.x:
-  #
-  # If the font quality on non-retina display looks bad then set
-  # `use_thin_strokes` to `true` and enable font smoothing by running the
-  # following command:
-  #   `defaults write -g CGFontRenderingFontSmoothingDisabled -bool NO`
-  #
-  # This is a global setting and will require a log out or restart to take
-  # effect.
-  use_thin_strokes: true
-
 debug:
   # Display the time it takes to redraw each frame.
   render_timer: false
@@ -140,7 +124,7 @@ draw_bold_text_with_bright_colors: true
 colors:
   # Default colors
   primary:
-    background: '0x000000'
+    background: '0x161421'
     foreground: '0xeaeaea'
 
     # Bright and dim foreground colors
@@ -230,12 +214,6 @@ bell:
   animation: EaseOutExpo
   duration: 0
   color: '0xffffff'
-
-# Background opacity
-#
-# Window opacity as a floating point number from `0.0` to `1.0`.
-# The value `0.0` is completely transparent and `1.0` is opaque.
-background_opacity: 1.0
 
 # Mouse bindings
 #
