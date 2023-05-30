@@ -2,6 +2,8 @@
 
 (package-initialize)
 
+;; don't create lockfiles, which are hidden broken symlinks
+(setq create-lockfiles nil)
 
 (custom-set-variables
  '(ansi-color-names-vector
