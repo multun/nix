@@ -1,22 +1,22 @@
 { lib, stdenv, fetchurl, wrapGAppsHook
 , desktop-file-utils, meson, ninja, pkg-config
 , sqlite, gdk-pixbuf, glib, gtk4, libadwaita, dbus
-, python3, rustPlatform
+, python3, rustPlatform, cargo, rustc
 }:
 
 stdenv.mkDerivation rec {
   pname = "furtherance";
-  version = "1.2.0";
+  version = "1.7.0";
 
   src = fetchurl {
     url = "https://github.com/lakoliu/Furtherance/archive/refs/tags/v${version}.tar.gz";
-    hash = "sha256-bmxe6TlZeuVGtaAa4o/5KhuREh9ZwJYqNMxe5jJ7uz8=";
+    hash = "sha256-zloRZsdLqS21mviqRGPja+1MItU49eYaMr1cit6S26w=";
   };
 
   cargoDeps = rustPlatform.fetchCargoTarball {
     inherit src;
     name = "${pname}-${version}";
-    hash = "sha256-ldEOdnR6hXiM0TQe45DMjN6W78LSFs65TyHi8YpJ9y4=";
+    hash = "sha256-qLrX3X8wgNrI8G0RgWydVA35cdxcblSUxTKHty+eCds=";
   };
 
   postPatch = ''
@@ -26,9 +26,9 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     desktop-file-utils meson ninja pkg-config wrapGAppsHook
-    rustPlatform.rust.cargo
+    cargo
     rustPlatform.cargoSetupHook
-    rustPlatform.rust.rustc
+    rustc
     python3 # for meson postinstall script
     gtk4 # for gtk-update-icon-cache
     glib # for glib-compile-schemas
