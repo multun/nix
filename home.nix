@@ -7,9 +7,9 @@ let nix_config = {
 in
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
     unstable = import <nixos-unstable> { config = nix_config; };
-    binaryninja_python = (unstable.python3.withPackages (ps: [
-      ps.flatbuffers
-      ps.pyside2
+    binaryninja_python = (pkgs.python3.withPackages (ps: [
+      # ps.flatbuffers
+      # ps.pyside2
     ]));
     custom-steam = (pkgs.steam.override { extraPkgs = pkgs: [ pkgs.mono ] ;});
 
@@ -199,13 +199,13 @@ in
 
     # proprietary stuff
     # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
-    (pkgs.callPackage ./binaryninja.nix {
+    (pkgs.callPackage ./binaryninja {
       pname = "binaryninja";
-      version = "unknown";
+      version = "3.2";
       src = requireFile {
         name = "BinaryNinja-personal.zip";
         url = "https://binary.ninja/recover/";
-        sha256 = "02x5kkqlnzqz3adiv49d1nql1ka4kq03bsddls797rj399ic7xbk";
+        sha256 = "086ivmb6bprvc48xfj6l5bwm4rvk8cczwmmdvnw7bxlzmqwm8wfg";
       };
     })
 
