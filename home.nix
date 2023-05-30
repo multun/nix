@@ -267,7 +267,6 @@ in
     powerline-fonts
 
     # window manager & friends / dotfiles stuff
-    alacritty
     i3status-rust
     dejavu_fonts
     grml-zsh-config
@@ -403,6 +402,35 @@ in
     '';
   };
 
+  programs.foot = {
+    enable = true;
+    # server.enable = true;
+    settings = {
+      main = {
+        font = "Source Code Pro for Powerline:size=10";
+	dpi-aware = "yes";
+      };
+      colors = {
+        regular0 = "000000";  # black
+        regular1 = "d54e53";  # red
+        regular2 = "b9ca4a";  # green
+        regular3 = "e6c547";  # yellow
+        regular4 = "7aa6da";  # blue
+        regular5 = "c397d8";  # magenta
+        regular6 = "70c0ba";  # cyan
+        regular7 = "eaeaea";  # white
+
+        bright0 = "666666";  # black
+        bright1 = "ff3334";  # red
+        bright2 = "9ec400";  # green
+        bright3 = "e7c547";  # yellow
+        bright4 = "7aa6da";  # blue
+        bright5 = "b77ee0";  # magenta
+        bright6 = "54ced6";  # cyan
+        bright7 = "ffffff";  # white
+      };
+    };
+  };
 
   services.emacs = {
     enable = true;
@@ -458,7 +486,6 @@ in
 
   home.file.".config/i3/config".source = ./configs/i3config;
   home.file.".config/i3status-rust/config.toml".source = ./configs/i3status_rust.toml;
-  home.file.".config/alacritty/alacritty.yml".source = ./configs/alacritty.yml;
   home.file.".config/mpv/mpv.conf".source = ./configs/mpv.conf;
   home.file.".slrnrc".source = ./slrnrc;
   home.file.".signature".source = ./signature;

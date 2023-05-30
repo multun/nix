@@ -1,6 +1,6 @@
 set $mod Mod4
 
-set $terminal gnome-terminal
+set $terminal foot
 
 input *  {
     xkb_layout fr
