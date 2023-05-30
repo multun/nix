@@ -11,7 +11,9 @@ let mypkgs = import ./mypkgs.nix { inherit pkgs; };
       # ps.flatbuffers
       # ps.pyside2
     ]));
-    custom-steam = (pkgs.steam.override { extraPkgs = pkgs: [ pkgs.mono ] ;});
+    custom-steam = (unstable.steam
+      # .override { extraPkgs = pkgs: [ pkgs.mono ] ;}
+    );
 
     wayland-screenshot = (with pkgs; stdenv.mkDerivation {
       pname = "screenshot";
@@ -196,18 +198,17 @@ in
     wineWowPackages.stable
 
     # rust stuff
-    # (rust-bin.nightly.latest.default.override {
-    #   extensions = [
-    #     "rustfmt"
-    #     "clippy"
-
-    #     # rust language server stuff
-    #     "rls"
-    #     "rust-src"
-    #     "rust-analysis"
-    #   ];
-    # })
-    rustup
+    (let rust-config = {
+           extensions = [
+             "rustfmt"
+             "clippy"
+             "rls"
+             "rust-src"
+             "rust-analysis"
+             "rust-analyzer"
+           ];
+         }; in
+       (rust-bin.stable.latest.default.override rust-config))
 
     # proprietary stuff
     # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
@@ -224,30 +225,17 @@ in
     # games
     custom-steam
     custom-steam.run
-    minecraft
+    prismlauncher  # minecraft
 
     # nix stuff
     nix-review
     nix-index
     nixpkgs-fmt
 
-    # acu stuff
-    fira
-    fira-code
-    fira-mono
+    # emacs
     aspell
     aspellDicts.fr
     aspellDicts.en-computers
-    texlive.combined.scheme-full
-    vim
-    slrn
-    cmake
-    ltrace
-    lldb
-    rr
-    uftrace
-    graphviz
-    imagemagick
 
     # sysadmin
     virtmanager
@@ -258,31 +246,28 @@ in
     docker-compose
     libcgroup # for cgcreate and friends
 
-    # dev tools
+    # C dev tools
     (lib.lowPrio gcc)
     (lib.hiPrio clang)
     gnumake
-    python3Packages.grip
-    clang-tools
-    jq
     binutils
     gdb
     moreutils
     unrar
-    valgrind
-    ninja
-    meson
-    readline
 
-    # window manager & friends / dotfiles stuff
-    alacritty
+    # fonts
+    fira
+    fira-code
+    fira-mono
     terminus_font
-    font-awesome-ttf
     font-awesome
     roboto
     lato
     roboto-mono
     powerline-fonts
+
+    # window manager & friends / dotfiles stuff
+    alacritty
     i3status-rust
     dejavu_fonts
     grml-zsh-config
@@ -290,7 +275,7 @@ in
     numix-icon-theme
     hicolor-icon-theme
 
-    # sway-specific
+    # wayland stuff
     swaylock
     swayidle
     swaybg
@@ -306,6 +291,7 @@ in
     # CLI utils
     exa
     ripgrep
+    jq
     fzf
     file
     lf  # ranger style browser
@@ -315,7 +301,7 @@ in
     bat
     tree
     inotify-tools
-    manpages
+    man-pages
     zip
     unzip
     pv
@@ -326,17 +312,14 @@ in
     # networking
     aria2
     rsync
-    nmap
 
     # desktop
     zathura
     okular
-    evince
     unstable.firefox-wayland
     chromium-wayland
     android-file-transfer
     keepassxc
-    libreoffice-fresh
     usbutils
 
     # notifications
@@ -345,9 +328,6 @@ in
     # productivity
     unstable.super-productivity
     (unstable.callPackage ./furtherance.nix {})
-
-    # social
-    unstable.ripcord
 
     # audio / video
     mpv
@@ -358,11 +338,9 @@ in
     obs-studio
 
     # image processing
-    scrot
     gthumb
     gimp
-    feh
-    inkscape
+    unstable.inkscape
     # (let inkscape = callPackage ./inkscape.nix { lcms = lcms2; additionalPythonDeps = (ps: [ps.pygobject3 ps.pygments]); };
     #      inksyntax = (stdenv.mkDerivation {
     #        name = "inksyntax";
@@ -389,14 +367,7 @@ in
     # )
     xournal
 
-    # 3d graphics
-    apitrace
-    blender
-    renderdoc
-    meshlab
-
     # system config
-    arandr
     acpilight
 
     # keyboard stuff
@@ -406,12 +377,12 @@ in
     geogebra
 
     # sncf
-    # gradle_jdk11
     sops
     gnupg
     jdk17
     idea-wayland
     dbeaver
+    python3Packages.grip
   ];
   fonts.fontconfig.enable = true;
 
