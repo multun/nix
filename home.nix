@@ -112,8 +112,8 @@ let mypkgs = import ./mypkgs.nix { inherit pkgs; };
       }
     );
 
-    vscode-wayland = makeWaylandVSCode { base = vscode-insider; pname = "vscode"; binName = "code-insiders"; };
-    codium-wayland = makeWaylandVSCode { base = pkgs.codium; pname = "vscodium"; binName = "codium"; };
+    vscode-wayland = makeWaylandVSCode { base = vscode-insider; pname = "vscode-insiders"; binName = "code-insiders"; };
+    codium-wayland = makeWaylandVSCode { base = pkgs.vscodium; pname = "vscodium"; binName = "codium"; };
 in
 {
   home.enableDebugInfo = true;
@@ -133,7 +133,7 @@ in
 
   programs.vscode = {
     enable = true;
-    package = vscode-wayland;
+    package = codium-wayland;
     userSettings = {
       "telemetry.enableCrashReporter" = false;
       "telemetry.enableTelemetry" = false;
@@ -166,7 +166,8 @@ in
       redhat.java
       matklad.rust-analyzer
       tamasfe.even-better-toml
-      (unstable.vscode-utils.buildVscodeMarketplaceExtension {
+      ms-dotnettools.csharp
+      (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
         mktplcRef = {
           name = "meson";
           publisher = "asabil";
@@ -175,6 +176,17 @@ in
         };
         meta = with lib; {
           license = licenses.asl20;
+        };
+      })
+      (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+        mktplcRef = {
+          name = "vscode-openapi";
+          publisher = "42Crunch";
+          version = "4.13.0";
+          sha256 = "sha256-BwVB5GXNFn95WbXhf9oMtqFkxHl4luYBTgesq6lZYtM=";
+        };
+        meta = with lib; {
+          license = licenses.agpl3;
         };
       })
     ];
