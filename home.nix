@@ -6,12 +6,14 @@ let nix_config = {
     };
 in
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
-    unstable = import <nixos-unstable> { config = nix_config; };
+    # unstable = import <nixos-unstable> { config = nix_config; };
     binaryninja_python = (pkgs.python3.withPackages (ps: [
       # ps.flatbuffers
       # ps.pyside2
     ]));
-    custom-steam = (unstable.steam
+    custom-steam = (
+      # unstable.
+      pkgs.steam
       # .override { extraPkgs = pkgs: [ pkgs.mono ] ;}
     );
 
@@ -85,13 +87,13 @@ let mypkgs = import ./mypkgs.nix { inherit pkgs; };
     vscode-insider = (pkgs.vscode.override {isInsiders = true;}).overrideAttrs (oldAttrs: rec {
       src = (builtins.fetchTarball {
         url = "https://update.code.visualstudio.com/latest/linux-x64/insider";
-        sha256 = "0j2fffnghkp6amcsk74ws0p3168bbd1vk0ikay7lwpv62x78yn58";
+        sha256 = "011zy589c0j78q7skz97q9r6vhmpjmqdh5wl5m33qchhz0l96xsf";
       });
       version = "latest";
     });
 
     makeWaylandVSCode = ({ base, pname, binName }:
-      unstable.stdenv.mkDerivation {
+      pkgs.stdenv.mkDerivation {
         inherit pname;  # must be kept this way for home manager to work
         version = base.version;
         buildInputs = [ base ];
@@ -101,7 +103,8 @@ let mypkgs = import ./mypkgs.nix { inherit pkgs; };
 
           cat > $out/bin/${binName}-wayland <<EOF
           #!/bin/sh
-          exec ${base}/bin/${binName} --enable-features=UseOzonePlatform --ozone-platform=wayland "\$@"
+          unset NIXOS_OZONE_WL
+          exec ${base}/bin/${binName} "\$@"
           EOF
           chmod +x $out/bin/${binName}-wayland
 
@@ -138,6 +141,7 @@ in
     userSettings = {
       "telemetry.enableCrashReporter" = false;
       "telemetry.enableTelemetry" = false;
+      "redhat.telemetry.enabled" = false;
       "update.channel" = "none";
       "files.insertFinalNewline" = true;
       "files.trimTrailingWhitespace" = true;
@@ -168,6 +172,8 @@ in
       matklad.rust-analyzer
       tamasfe.even-better-toml
       ms-dotnettools.csharp
+      ms-vsliveshare.vsliveshare
+      golang.go
       (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
         mktplcRef = {
           name = "meson";
@@ -196,28 +202,28 @@ in
   home.packages = with pkgs; [
     wineWowPackages.stable
 
-    # rust stuff
-    (let rust-config = {
-           extensions = [
-             "rustfmt"
-             "clippy"
-             "rls"
-             "rust-src"
-             "rust-analysis"
-             "rust-analyzer"
-           ];
-         }; in
-       (rust-bin.stable.latest.default.override rust-config))
+    # # rust stuff
+    # (let rust-config = {
+    #        extensions = [
+    #          "rustfmt"
+    #          "clippy"
+    #          "rls"
+    #          "rust-src"
+    #          "rust-analysis"
+    #          "rust-analyzer"
+    #        ];
+    #      }; in
+    #    (rust-bin.stable.latest.default.override rust-config))
 
     # proprietary stuff
     # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
     (pkgs.callPackage ./binaryninja {
       pname = "binaryninja";
-      version = "3.2";
+      version = "3.5";
       src = requireFile {
         name = "BinaryNinja-personal.zip";
         url = "https://binary.ninja/recover/";
-        sha256 = "086ivmb6bprvc48xfj6l5bwm4rvk8cczwmmdvnw7bxlzmqwm8wfg";
+        sha256 = "0391hfyq80k5jrxj6nkfgijxq5f9wkycpqr60dw86flv2rcpj7n2";
       };
     })
 
@@ -227,23 +233,24 @@ in
     prismlauncher  # minecraft
 
     # nix stuff
-    nix-review
+    nixpkgs-review
     nix-index
     nixpkgs-fmt
 
     # emacs
-    aspell
-    aspellDicts.fr
-    aspellDicts.en-computers
+    (aspellWithDicts (ps: with ps; [ fr en en-computers ]))
 
     # sysadmin
-    virtmanager
+    virt-manager
     debootstrap
     ansible
     ldns
     iptables
     docker-compose
     libcgroup # for cgcreate and friends
+    kubectl
+    awscli2
+    (wrapHelm kubernetes-helm { plugins = [ kubernetes-helmPlugins.helm-secrets ]; })
 
     # C dev tools
     (lib.lowPrio gcc)
@@ -264,6 +271,7 @@ in
     lato
     roboto-mono
     powerline-fonts
+    comic-relief
 
     # window manager & friends / dotfiles stuff
     i3status-rust
@@ -287,12 +295,10 @@ in
     wayland-screenshot
 
     # CLI utils
-    exa
     ripgrep
     jq
     fzf
     file
-    lf  # ranger style browser
     fd
     psmisc # for pstree, peekfd
     iftop
@@ -306,6 +312,7 @@ in
     xorg.xkill
     xclip
     tokei
+    python3
 
     # networking
     aria2
@@ -314,7 +321,7 @@ in
     # desktop
     zathura
     okular
-    unstable.firefox-wayland
+    firefox-wayland
     chromium-wayland
     android-file-transfer
     keepassxc
@@ -324,8 +331,8 @@ in
     libnotify
 
     # productivity
-    unstable.super-productivity
-    (unstable.callPackage ./furtherance.nix {})
+    super-productivity
+    furtherance
 
     # audio / video
     mpv
@@ -338,7 +345,7 @@ in
     # image processing
     gthumb
     gimp
-    unstable.inkscape
+    inkscape
     xournal
 
     # system config
@@ -372,7 +379,19 @@ in
       source ${./configs/aliases.sh}
       bindkey '^R' history-incremental-pattern-search-backward
       bindkey '^F' history-incremental-pattern-search-forward
+
+      export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+      export MANROFFOPT='-c'
+      export EDITOR=emacs
+      export CLICOLOR_FORCE=1
+      export FZF_DEFAULT_OPTS="--preview 'bat --style=numbers --color=always {} | head -500'"
     '';
+  };
+
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
   };
 
   programs.foot = {
@@ -384,6 +403,8 @@ in
         dpi-aware = "yes";
       };
       colors = {
+        background = "0f0f0f";
+
         regular0 = "000000";  # black
         regular1 = "d54e53";  # red
         regular2 = "b9ca4a";  # green
@@ -452,7 +473,7 @@ in
   wayland.windowManager.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
-    systemdIntegration = true;
+    systemd.enable = true;
     config = null;
     extraConfig = builtins.readFile ./configs/sway;
   };
@@ -523,6 +544,7 @@ in
     temperature.night = 4500;
   };
 
+  systemd.user.services.waybar.Service.Environment = "PATH=${config.home.profileDirectory}/bin";
   programs.waybar = {
     enable = true;
     systemd.enable = true;
@@ -595,6 +617,16 @@ in
       }
     ];
   };
+
+  services.easyeffects = {
+    enable = true;
+  };
+
+  # systemd.user.services.kdeconnect.Service.Environment = lib.mkForce "PATH=${config.home.profileDirectory}:/bin/run/current-system/sw/bin";
+  # services.kdeconnect = {
+  #   enable = true;
+  #   indicator = true;
+  # };
 
   programs.git = {
     enable = true;
