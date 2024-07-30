@@ -4,9 +4,13 @@ let nix_config = {
     documentation.dev.enable = true;
     xdg.portal.enable = false;
     };
+    cursor = {
+      name = "WhiteSur-cursors";
+      package = pkgs.whitesur-cursors;
+    };
 in
 let mypkgs = import ./mypkgs.nix { inherit pkgs; };
-    # unstable = import <nixos-unstable> { config = nix_config; };
+    unstable = import <nixos-unstable> { config = nix_config; };
     binaryninja_python = (pkgs.python3.withPackages (ps: [
       # ps.flatbuffers
       # ps.pyside2
@@ -135,72 +139,81 @@ in
     '';
   };
 
-  programs.vscode = {
-    enable = true;
-    package = codium-wayland;
-    userSettings = {
-      "telemetry.enableCrashReporter" = false;
-      "telemetry.enableTelemetry" = false;
-      "redhat.telemetry.enabled" = false;
-      "update.channel" = "none";
-      "files.insertFinalNewline" = true;
-      "files.trimTrailingWhitespace" = true;
-      "workbench.colorTheme" = "Monokai";
-      "mesonbuild.configureOnOpen" = true;
-      "editor.fontSize" = 12;
-      "editor.insertSpaces" = true;
-      "editor.detectIndentation" = false;
-      "editor.tabSize" = 4;
-    };
-    keybindings = [
-      {
-        key = "ctrl+alt+b";
-        command = "workbench.action.toggleActivityBarVisibility";
-      }
-      {
-        key = "ctrl+m";
-        command = "workbench.action.toggleActivityBarVisibility";
-      }
-    ];
-    extensions = with pkgs.vscode-extensions; [
-      ms-vscode.cpptools
-      arrterian.nix-env-selector
-      bbenoist.nix
-      ms-python.python
-      redhat.vscode-yaml
-      redhat.java
-      matklad.rust-analyzer
-      tamasfe.even-better-toml
-      ms-dotnettools.csharp
-      ms-vsliveshare.vsliveshare
-      golang.go
-      (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-        mktplcRef = {
-          name = "meson";
-          publisher = "asabil";
-          version = "1.3.0";
-          sha256 = "sha256-QMp3dEFx6Mu5pgzklylW6b/ugYbtbT/qz8IeeuzPZeA=";
-        };
-        meta = with lib; {
-          license = licenses.asl20;
-        };
-      })
-      (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-        mktplcRef = {
-          name = "vscode-openapi";
-          publisher = "42Crunch";
-          version = "4.13.0";
-          sha256 = "sha256-BwVB5GXNFn95WbXhf9oMtqFkxHl4luYBTgesq6lZYtM=";
-        };
-        meta = with lib; {
-          license = licenses.agpl3;
-        };
-      })
-    ];
-  };
+  
+  # programs.vscode = {
+  #   enable = true;
+  #   package = codium-wayland;
+  #   userSettings = {
+  #     "telemetry.enableCrashReporter" = false;
+  #     "telemetry.enableTelemetry" = false;
+  #     "redhat.telemetry.enabled" = false;
+  #     "update.channel" = "none";
+  #     "files.insertFinalNewline" = true;
+  #     "files.trimTrailingWhitespace" = true;
+  #     "workbench.colorTheme" = "Monokai";
+  #     "mesonbuild.configureOnOpen" = true;
+  #     "editor.fontSize" = 12;
+  #     "editor.insertSpaces" = true;
+  #     "editor.detectIndentation" = false;
+  #     "editor.tabSize" = 4;
+  #   };
+  #   keybindings = [
+  #     {
+  #       key = "ctrl+alt+b";
+  #       command = "workbench.action.toggleActivityBarVisibility";
+  #     }
+  #     {
+  #       key = "ctrl+m";
+  #       command = "workbench.action.toggleActivityBarVisibility";
+  #     }
+  #   ];
+  #   extensions = with pkgs.vscode-extensions; [
+  #     # ms-vscode.cpptools
+  #     arrterian.nix-env-selector
+  #     bbenoist.nix
+  #     ms-python.python
+  #     redhat.vscode-yaml
+  #     redhat.java
+  #     matklad.rust-analyzer
+  #     tamasfe.even-better-toml
+  #     ms-dotnettools.csharp
+  #     ms-vsliveshare.vsliveshare
+  #     golang.go
+  #     (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+  #       mktplcRef = {
+  #         name = "meson";
+  #         publisher = "asabil";
+  #         version = "1.3.0";
+  #         sha256 = "sha256-QMp3dEFx6Mu5pgzklylW6b/ugYbtbT/qz8IeeuzPZeA=";
+  #       };
+  #       meta = with lib; {
+  #         license = licenses.asl20;
+  #       };
+  #     })
+  #     (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+  #       mktplcRef = {
+  #         name = "flatbuffers";
+  #         publisher = "gaborv";
+  #         version = "0.1.0";
+  #         sha256 = "sha256-3Wsm1iit5eC5njLFLbGhhAYNYpnAWJr74OlsRgQqCss=";
+  #       };
+  #     })
+  #     (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+  #       mktplcRef = {
+  #         name = "vscode-openapi";
+  #         publisher = "42Crunch";
+  #         version = "4.13.0";
+  #         sha256 = "sha256-BwVB5GXNFn95WbXhf9oMtqFkxHl4luYBTgesq6lZYtM=";
+  #       };
+  #     })
+  #   ];
+  # };
 
   home.packages = with pkgs; [
     wineWowPackages.stable
+
+    vscode
+    jetbrains.datagrip
 
     # # rust stuff
     # (let rust-config = {
@@ -214,16 +227,16 @@ in
     #        ];
     #      }; in
     #    (rust-bin.stable.latest.default.override rust-config))
+    cargo rustfmt rustc
 
     # proprietary stuff
-    # nix-prefetch-url --type sha256 "file:///$(realpath BinaryNinja-personal.zip)"
-    (pkgs.callPackage ./binaryninja {
-      pname = "binaryninja";
-      version = "3.5";
+    # nix-prefetch-url --type sha256 "file:///$(realpath binaryninja_personal_linux.zip)"
+    (pkgs.qt6Packages.callPackage ./binaryninja {
+      version = "4.0";
       src = requireFile {
-        name = "BinaryNinja-personal.zip";
+        name = "binaryninja_personal_linux.zip";
         url = "https://binary.ninja/recover/";
-        sha256 = "0391hfyq80k5jrxj6nkfgijxq5f9wkycpqr60dw86flv2rcpj7n2";
+        sha256 = "0izh3krivdrjgmi441sdafkjjgsavawjbxlisl5yy2naz7r8yjwg";
       };
     })
 
@@ -239,6 +252,7 @@ in
 
     # emacs
     (aspellWithDicts (ps: with ps; [ fr en en-computers ]))
+    unstable.zed-editor
 
     # sysadmin
     virt-manager
@@ -260,6 +274,7 @@ in
     gdb
     moreutils
     unrar
+    valgrind
 
     # fonts
     fira
@@ -344,6 +359,7 @@ in
 
     # image processing
     gthumb
+    darktable
     gimp
     inkscape
     xournal
@@ -362,7 +378,6 @@ in
     gnupg
     jdk17
     idea-wayland
-    dbeaver
     python3Packages.grip
   ];
   fonts.fontconfig.enable = true;
@@ -371,7 +386,7 @@ in
 
   programs.zsh = {
     enable = true;
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
     history.extended = true;
     initExtra = ''
       source ${pkgs.grml-zsh-config}/etc/zsh/zshrc
@@ -469,13 +484,25 @@ in
     };
   };
 
+  home.pointerCursor = {
+    name = cursor.name;
+    package = cursor.package;
+    gtk.enable = true;
+    x11.enable = true;
+  };
 
   wayland.windowManager.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
     systemd.enable = true;
     config = null;
-    extraConfig = builtins.readFile ./configs/sway;
+    extraConfig = (
+      builtins.readFile ./configs/sway + ''
+        seat "*" {
+          xcursor_theme ${cursor.name}
+        }
+      ''
+    );
   };
 
   home.file.".config/i3status-rust/config.toml".source = ./configs/i3status_rust.toml;
@@ -645,7 +672,7 @@ in
 
   qt = {
     enable = true;
-    platformTheme = "gtk";
+    platformTheme.name = "gtk";
   };
 
   gtk = {
